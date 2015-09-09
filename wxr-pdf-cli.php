@@ -107,7 +107,6 @@ class WXR_PDF_Worker {
         require_once WXR2PDF_PATH . '/inc/class-wxr-pdf-create.php';
 
         $create = WXR2PDF_Create::get_instance();
-        //WXR2PDF_Options::$options['pdf_watermark']['watermark'] = '';
 
         $parser = new WXR_Parser();
             $data = $parser->parse($wxr_file);
@@ -122,7 +121,7 @@ class WXR_PDF_Worker {
                     $post['author_last_name']    = $data['authors'][$post['post_author']]['author_last_name'];
 
                     $category = $tag = array();
-                    if (isset($post['terms'])) {
+                    if ( isset($post['terms']) && is_array($post['terms']) )  {
 		                    foreach ($post['terms'] as $term) {
 		                        switch ($term['domain']) {
 		                            case 'category':
