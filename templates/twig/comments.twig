@@ -1,0 +1,13 @@
+<hr>
+<strong>{{l10n.comments}}</strong>
+<dl>
+{% for comment in post.comments %}
+    {% if comment.comment_approved %}
+    <dt><strong>{{comment.comment_author}}:</strong></dt>
+        <dd>{{l10n.email}}: {{comment.comment_author_email}}</dd>
+        <dd>{{l10n.url}}: {{comment.comment_author_url}}</dd>
+        <dd>{{l10n.date}}: {{comment.comment_date|date(l10n.date_format)}}</dd>
+        <dd>{{comment.comment_content|raw}}</dd>
+    {% endif %}
+{% endfor %}
+</dl>

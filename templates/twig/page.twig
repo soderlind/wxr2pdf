@@ -1,0 +1,14 @@
+{% for post in posts %}
+    <h1 class="entry-title">{{post.post_title}}</h1>
+    {{l10n.by}} {{post.author_display_name}} ({{post.author_email}})
+    <hr>
+    {{post.post_content|raw}}
+
+    {% if post.comments|length > 0 %}
+        {% include 'comments.twig' %}
+    {% endif %}
+
+    {% if not loop.last %}
+        <pagebreak>
+    {% endif %}
+{% endfor %}
