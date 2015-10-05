@@ -1,22 +1,17 @@
-<htmlpageheader name="MyHeader2">
-<div style="font-weight: bold; font-size: 10pt;">{{doc.madeby}}</div>
-<div style="text-align: right; border-bottom: 1px solid #000000; font-weight: bold; font-size: 10pt;">{{doc.title}}</div>
-</htmlpageheader>
-
 <htmlpageheader name="MyHeader1">
-<table width="100%" style="vertical-align: bottom; font-family: serif; font-size: 8pt; 
+<table width="100%" style="vertical-align: bottom; font-family: serif; font-size: 8pt;
     color: #000000; font-weight: bold; font-style: italic; border-bottom: 1px solid #000000;"><tr>
-    <td width="50%"><span style="font-weight: bold; font-style: italic;">{{doc.madeby}}</span></td>
-    <td width="50%" style="text-align: right; ">{{doc.titleprefix}} {{doc.title}}</td>
+    <td width="50%"><span style="font-weight: bold; font-style: italic;">{{doc.madeby|e}}</span></td>
+    <td width="50%" style="text-align: right; ">{{doc.titleprefix|e}} {{doc.title|e}}</td>
     </tr></table>
 </htmlpageheader>
 
 <htmlpagefooter name="MyFooter1">
-<table width="100%" style="vertical-align: bottom; font-family: serif; font-size: 8pt; 
+<table width="100%" style="vertical-align: bottom; font-family: serif; font-size: 8pt;
     color: #000000; font-weight: bold; font-style: italic;"><tr>
     <td width="33%"><span style="font-weight: bold; font-style: italic;">{DATE {{l10n.date_format}} }</span></td>
     <td width="33%" align="center" style="font-weight: bold; font-style: italic;">{PAGENO}/{nbpg}</td>
-    <td width="33%" style="text-align: right; ">{{doc.title}}</td>
+    <td width="33%" style="text-align: right; ">{{doc.title|e}}</td>
     </tr></table>
 </htmlpagefooter>
 
