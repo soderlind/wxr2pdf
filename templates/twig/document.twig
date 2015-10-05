@@ -5,6 +5,17 @@
 </head>
 <body>
 	{% include 'config.twig' %}
-	{% include 'page.twig' %}
+
+	{{content|raw}}
+
+    {% if urls|length > 0 %}
+	<pagebreak />
+	<a name="wxr2pdf-urls"></a><h1>{{l10n.external_files}}</h1>
+	<ol>
+	{% for url in urls %}
+		<li>{{ url.txt }}:<br /><a href="{{url.url}}">{{url.url}}</a></li>
+	{% endfor %}
+	</ol>
+	{% endif %}
 </body>
 </html>
