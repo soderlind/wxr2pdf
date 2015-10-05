@@ -1,7 +1,14 @@
 {% for post in posts %}
+    <a name="{{post.post_id}}" id="{{post.post_id}}"></a>
+    {% if post.featured_image|length > 0 %}
+        <img class="aligncenter" src="{{post.featured_image}}" />
+    {% endif %}
     <h1 class="entry-title">{{post.post_title}}</h1>
-    {{l10n.by}} {{post.author_display_name}} ({{post.author_email}})
-    <hr>
+    {{l10n.by}} {{post.author_display_name}} ({{post.author_email}}) - {{l10n.date}}: {{post.post_date|date(l10n.date_format)}}
+    <hr />
+    {% if post.post_excerpt|length > 0 %}
+        <p><em>{{post.post_excerpt|e}}</em></p>
+    {% endif %}
     {{post.post_content|raw}}
 
     {% if post.comments|length > 0 %}
@@ -9,6 +16,6 @@
     {% endif %}
 
     {% if not loop.last %}
-        <pagebreak>
+        <pagebreak />
     {% endif %}
 {% endfor %}
