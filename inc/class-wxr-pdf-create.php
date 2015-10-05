@@ -27,7 +27,7 @@ class WXR2PDF_Create extends  WXR2PDF_Options {
 
 	private $pdf;
 
-	function init($post) {
+	function init($post, $title = '', $ingress = '') {
 
 	//	$this->author_firstlast = sprintf("%s %s",get_the_author_meta('user_firstname',$post['post_author'],get_the_author_meta('user_lastname',$post['post_author']);
 	//	$this->author_lastfirst = sprintf("%s, %s",get_the_author_meta('user_firstname',$post['post_author'],get_the_author_meta('user_lastname',$post['post_author']);
@@ -57,7 +57,7 @@ class WXR2PDF_Create extends  WXR2PDF_Options {
 			'', // $mode=''
 			$paper_format, // $format='A4'
 			0,  // $default_font_size=0
-			'', // $default_font=''
+			'dejavusans', // $default_font=''
 			15, // $mgl=15 - margin_left
 			15, // $mgr=15 - margin right
 			16, // $mgt=16 - margin top
@@ -111,6 +111,9 @@ class WXR2PDF_Create extends  WXR2PDF_Options {
 				'BI' => "DejaVuSansMono-BoldOblique.ttf",
 				'useOTL' => 0xFF,
 				'useKashida' => 75,
+				),
+			"fontawesome" => array(
+				'R' => "fontawesome-webfont.ttf"
 				)
 			);
 
@@ -203,7 +206,7 @@ class WXR2PDF_Create extends  WXR2PDF_Options {
 		$print_css = "";
 		$header    = parent::$options['pdf_header']['header'];
 		switch ($header) {
-			case 'default_header':
+			case 'XXXdefault_header':
 				if (('0' == parent::$options['pdf_header']['default_header'][0] &&
 					 '0' == parent::$options['pdf_header']['default_header'][1] &&
 					 '0' == parent::$options['pdf_header']['default_header'][2] )) {
@@ -244,7 +247,7 @@ class WXR2PDF_Create extends  WXR2PDF_Options {
 
 		$footer = parent::$options['pdf_footer']['footer'];
 		switch ($footer) {
-			case 'default_footer':
+			case 'XXXdefault_footer':
 				if (('0' == parent::$options['pdf_footer']['default_footer'][0] &&
 					 '0' == parent::$options['pdf_footer']['default_footer'][1] &&
 					 '0' == parent::$options['pdf_footer']['default_footer'][2] )) {
@@ -280,9 +283,6 @@ class WXR2PDF_Create extends  WXR2PDF_Options {
 					'pdffooter',
 					$this->_parse_header_footer($post, parent::$options['pdf_footer']['custom_footer'])
 				);
-				break;
-			default:
-				$print_footer = "";
 				break;
 		}
 
@@ -369,6 +369,25 @@ class WXR2PDF_Create extends  WXR2PDF_Options {
 		// 	$this->pdf->showWatermarkImage = false;
 		// 	$this->pdf->showWatermarkText  = false;
 		// }
+
+		if ('' != $title) {
+			$this->pdf->WriteHTML(
+				// sprintf('
+				// 	<div style="height: 200px; width: 400px;margin: 150px auto; background: #eee;">
+				// 		<h1 style="font: 40px/200px Helvetica, sans-serif;text-align: center;">En tittel som er passe lang</h1>
+				// 	</div>'
+				// )
+				sprintf('
+					<div>
+						<h1 style="font-size: 200%%; text-align: center">%s</h1>
+						<p>%s</p>
+					</div>
+					', $title, $ingress)
+			);
+			$this->pdf->showWatermarkImage = false;
+			$this->pdf->showWatermarkText  = false;
+		}
+
 
 		$toc = parent::$options['pdf_layout']['add_toc'];
 		$this->pdf->AddPageByArray(array(
@@ -459,15 +478,29 @@ class WXR2PDF_Create extends  WXR2PDF_Options {
 
 	}
 
-	function pdf($filename, $html) {
+	function create($html) {
 
 		// $html = '<h1 class="entry-title">' . $post['post_title'] . '</h1>';
 		// $content = $post['post_content'];
 		// $content = preg_replace("/\[\\/?readoffline(\\s+.*?\]|\])/i", "", $content); // remove all [readonline] shortcodes
 
 		$this->pdf->WriteHTML($html);
-		$this->pdf->Output($filename, 'F');
+	}
 
+	// function attach($file_list) {
+	// 	$this->pdf->SetImportUse();
+	// 	foreach ($file_list as $file) {
+	// 		$pagecount = $this->pdf->SetSourceFile($file['url']);
+	// 		for ($i=1; $i<=($pagecount); $i++) {
+	// 		    $this->pdf->AddPage();
+	// 		    $import_page = $this->pdf->ImportPage($i);
+	// 		    $this->pdf->UseTemplate($import_page);
+	// 		}
+	// 	}
+	// }
+
+	function save($filename) {
+		$this->pdf->Output($filename, 'F');
 	}
 
 	private function _header_footer($post, $type) {
