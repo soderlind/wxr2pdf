@@ -1,4 +1,4 @@
-# WP-CLI add-on: wxr2pdf convert an WordPress Export to PDF
+# WP-CLI add-on: wxr2pdf, convert an WordPress Export to PDF
 
 ## OPTIONS
 - `file`: Path to WXR file for parsing.
