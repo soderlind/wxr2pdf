@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WXR PDF CLI
-Version: 0.0.1
+Version: 0.0.2
 Description: Convert a WXR to a PDF document
 Author: Per Soderlind
 Author URI: https://soderlind.no
@@ -11,10 +11,11 @@ Text Domain: wxr2pdf
 Domain Path: /languages
 */
 
-define( 'WXR2PDF_PATH',   __DIR__ );
+define( 'WXR2PDF_PATH', __DIR__ );
 //define( 'WXR2PDF_URL',   plugin_dir_url( __FILE__ ));
 define( 'WXR2PDF_CACHE', WXR2PDF_PATH . '/var/pdf' );
-define( 'WXR2PDF_VERSION', '0.0.1' );
+define( 'WXR2PDF_VERSION', '0.0.2' );
+define( 'WXR2PDF_DEBUG', true );
 
 function wxr_pdf_cli_init() {
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -42,18 +43,17 @@ function wxr_pdf_cli_init() {
 			 *
 			 * ## EXAMPLES
 			 *
-			 *	 wp wxr-pdf convert file.wxr
-			 *	 wp wxr-pdf convert file.wxr --language=nb_NO
-			 *	 wp wxr-pdf convert file.wxr --noimg
-			 *	 wp wxr-pdf convert file.wxr --posttype=page
-			 *	 wp wxr-pdf convert file.wxr --nocomments
+			 *   wp wxr-pdf convert file.wxr
+			 *   wp wxr-pdf convert file.wxr --language=nb_NO
+			 *   wp wxr-pdf convert file.wxr --noimg
+			 *   wp wxr-pdf convert file.wxr --posttype=page
+			 *   wp wxr-pdf convert file.wxr --nocomments
 			 *
 			 * @synopsis <file> [--language=<country_CODE>] [--noimg] [--posttype=<posttype>]
 			 */
 			function convert( $args, $assoc_args ) {
 				if ( $args ) {
 					list( $wxr_file ) = $args;
-
 
 					if ( ! file_exists( $wxr_file ) ) {
 						WP_CLI::line();
@@ -62,7 +62,12 @@ function wxr_pdf_cli_init() {
 						);
 					}
 					//wp_async_task_add( 'wxr2pdf_worker', array( 'file' => $wxr_file, 'assoc_args' => $assoc_args ) );
-					WXR_PDF_Worker::wxr2pdf_callback( array( 'file' => $wxr_file, 'assoc_args' => $assoc_args ) );
+					WXR_PDF_Worker::wxr2pdf_callback(
+						array(
+							'file'       => $wxr_file,
+							'assoc_args' => $assoc_args,
+						)
+					);
 				}
 
 				WP_CLI::success( 'Done!' );
@@ -85,12 +90,11 @@ class WXR_PDF_Worker {
 
 	static function wxr2pdf_callback( $args ) {
 
-		$wxr_file = $args['file'];
-		$assoc_args = $args['assoc_args'];
-		$str_post_type  = ( isset( $assoc_args['posttype'] ) && '' != $assoc_args['posttype'] ) ? $assoc_args['posttype'] : 'post';
+		$wxr_file      = $args['file'];
+		$assoc_args    = $args['assoc_args'];
+		$str_post_type = ( isset( $assoc_args['posttype'] ) && '' != $assoc_args['posttype'] ) ? $assoc_args['posttype'] : 'post';
 		//		$post_types = array_flip(explode(':', $str_post_type));
 		$post_types = explode( ':', $str_post_type );
-
 
 		if ( isset( $assoc_args['language'] ) ) {
 			$mofile = WXR2PDF_PATH . '/languages/' . $assoc_args['language'] . '.mo';
@@ -101,9 +105,12 @@ class WXR_PDF_Worker {
 		Twig_Autoloader::register();
 
 		$loader = new Twig_Loader_Filesystem( dirname( __FILE__ ) . '/templates/twig' );
-		$twig = new Twig_Environment( $loader, array(
+		$twig   = new Twig_Environment(
+			$loader,
+			array(
 				//'cache' => dirname( __FILE__ ) . '/var/twig_cache',
-			) );
+			)
+		);
 		// include WXR file parsers
 		require_once dirname( __FILE__ ) . '/inc/class-wxr-parser.php';
 
@@ -115,8 +122,9 @@ class WXR_PDF_Worker {
 		$parser = new WXR2PDF_WXR_Parser();
 
 		$attachments = $parser->parse( $wxr_file, 'attachment' );
-		if ( defined( 'WP_CLI' ) && WP_CLI ) WP_CLI::print_value( $attachments['posts'] );
-
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			// WP_CLI::print_value( $attachments['posts'] );
+		}
 
 		foreach ( $post_types as $post_type ) {
 			$data = array();
@@ -135,28 +143,27 @@ class WXR_PDF_Worker {
 					/*
 					 * test if variables are set
 					 */
-					$post['author_email']		= $data['authors'][$post['post_author']]['author_email'];
-					$post['author_display_name'] = $data['authors'][$post['post_author']]['author_display_name'];
-					$post['author_first_name']   = $data['authors'][$post['post_author']]['author_first_name'];
-					$post['author_last_name']	= $data['authors'][$post['post_author']]['author_last_name'];
+					$post['author_email']        = $data['authors'][ $post['post_author'] ]['author_email'];
+					$post['author_display_name'] = $data['authors'][ $post['post_author'] ]['author_display_name'];
+					$post['author_first_name']   = $data['authors'][ $post['post_author'] ]['author_first_name'];
+					$post['author_last_name']    = $data['authors'][ $post['post_author'] ]['author_last_name'];
 
 					$category = $tag = array();
 					if ( isset( $post['terms'] ) && is_array( $post['terms'] ) ) {
 						foreach ( $post['terms'] as $term ) {
 							switch ( $term['domain'] ) {
-							case 'category':
-								$category[] = $term['name'];
-								break;
-							case 'post_tag':
-								$tag[] = $term['name'];
-								break;
+								case 'category':
+									$category[] = $term['name'];
+									break;
+								case 'post_tag':
+									$tag[] = $term['name'];
+									break;
 							}
 						}
 						unset( $post['terms'] );
 						$post['category'] = implode( ' ,', $category );
-						$post['tag']	  = implode( ' ,', $tag );
+						$post['tag']      = implode( ' ,', $tag );
 					}
-
 
 					// foreach ($post['postmeta'] as $element) {
 					// 	$thumb_id = '0';
@@ -166,61 +173,61 @@ class WXR_PDF_Worker {
 					// 	}
 					// }
 					$attachment_url = '';
-					if ( false != ($featured = self::_find_post($post['postmeta'], array('key' => '_thumbnail_id')) )) {
-						$thumb_id = $featured['value'];
-						$attachment = self::_find_post($attachments['posts'], array('post_id' => $thumb_id));
-						$attachment_url = ! empty($attachment['attachment_url']) ? $attachment['attachment_url'] : $attachment['guid'];
+					if ( false != ( $featured = self::_find_post( $post['postmeta'], array( 'key' => '_thumbnail_id' ) ) ) ) {
+						$thumb_id       = $featured['value'];
+						$attachment     = self::_find_post( $attachments['posts'], array( 'post_id' => $thumb_id ) );
+						$attachment_url = ! empty( $attachment['attachment_url'] ) ? $attachment['attachment_url'] : $attachment['guid'];
 					}
 					$post['featured_image'] = $attachment_url;
 
 					//sortarray - from http://php.net/manual/en/function.ksort.php#98465
-					foreach ( $post as $key=>$value ) {
-						if ( !isset( $sort_array[$key] ) ) {
-							$sort_array[$key] = array();
+					foreach ( $post as $key => $value ) {
+						if ( ! isset( $sort_array[ $key ] ) ) {
+							$sort_array[ $key ] = array();
 						}
-						$sort_array[$key][] = $value;
+						$sort_array[ $key ][] = $value;
 					}
 
 					//add to posts array
-					$posts[]					 = $post;
+					$posts[] = $post;
 				}
 			}
 
-
 			// from from http://php.net/manual/en/function.ksort.php#98465
-			$orderby = "post_date"; //change this to whatever key you want from the array
+			$orderby = 'post_date'; //change this to whatever key you want from the array
 			if ( ! $posts ) {
-				if ( defined( 'WP_CLI' ) && WP_CLI ) WP_CLI::line( WP_CLI::colorize( 'Post type "%C' . $post_type . '%n" not found in file.' ) );
+				if ( defined( 'WP_CLI' ) && WP_CLI ) {
+					WP_CLI::line( WP_CLI::colorize( 'Post type "%C' . $post_type . '%n" not found in file.' ) );
+				}
 				continue;
 			}
-			array_multisort( $sort_array[$orderby], SORT_DESC, $posts );
+			array_multisort( $sort_array[ $orderby ], SORT_DESC, $posts );
 
 			$all_post_slugs = array();
-			$post_ids = $sort_array['post_id'];
+			$post_ids       = $sort_array['post_id'];
 			foreach ( $sort_array['post_name'] as $key => $post_name ) {
-				$all_post_slugs[$post_ids[$key]] = $post_name;
+				$all_post_slugs[ $post_ids[ $key ] ] = $post_name;
 			}
 
 			//$all_post_slugs = array_merge($sort_array['post_name'], $sort_array['post_name']);
 
-
-			if ( defined( 'WP_CLI' ) && WP_CLI ) WP_CLI::print_value( $all_post_slugs );
+			self::clidebug( $all_post_slugs );
 			//if ( defined('WP_CLI') && WP_CLI ) WP_CLI::print_value($posts);
 			//printf("<pre>%s</pre>",print_r($sort_array['post_name'],true)); exit();
 
-
-			if ( defined( 'WP_CLI' ) && WP_CLI ) WP_CLI::print_value( array_filter( $data, 'is_scalar' ) ); // http://stackoverflow.com/a/13088138/1434155
-
+			self::clidebug( array_filter( $data, 'is_scalar' ) ); // http://stackoverflow.com/a/13088138/1434155
 			// if ( defined('WP_CLI') && WP_CLI ) WP_CLI::print_value($posts);
 			// exit();
 
 			$pdf->init( $posts[0], $data['site_title'], $data['site_decription'] );
 
-			$html = $twig->render( 'page.twig', array(
-					'posts'	=> $posts,
-					'site'	 => array_filter( $data, 'is_scalar' ), // http://stackoverflow.com/a/13088138/1434155
+			$html = $twig->render(
+				'page.twig',
+				array(
+					'posts'    => $posts,
+					'site'     => array_filter( $data, 'is_scalar' ), // http://stackoverflow.com/a/13088138/1434155
 					'posttype' => $post_type,
-					'l10n'	 => array(
+					'l10n'     => array(
 						'pretitle'    => __( 'Post Type', 'wxr2pdf' ),
 						'by'          => __( 'By', 'wxr2pdf' ),
 						'comments'    => __( 'Comments', 'wxr2pdf' ),
@@ -228,18 +235,19 @@ class WXR_PDF_Worker {
 						'email'       => __( 'Email', 'wxr2pdf' ),
 						'url'         => __( 'URL', 'wxr2pdf' ),
 						'date'        => __( 'Date', 'wxr2pdf' ),
-						'date_format' => __( 'm/d/Y', 'wxr2pdf' )
+						'date_format' => __( 'm/d/Y', 'wxr2pdf' ),
 					),
-					'doc'	  => array(
-						'title'	   => basename( $wxr_file, '.xml' ),
+					'doc'      => array(
+						'title'       => basename( $wxr_file, '.xml' ),
 						//'madeby'	  => __('This PDF is created using WXR2PDF.com', 'wxr2pdf'),
-						'madeby'	  => 'x',
-						'titleprefix' => __( 'File:', 'wxr2pdf' )
-					)
-				) );
+						'madeby'      => 'x',
+						'titleprefix' => __( 'File:', 'wxr2pdf' ),
+					),
+				)
+			);
 			$html = apply_filters( 'the_content', $html );
 
-			$filename =  dirname( $wxr_file ) . '/' . basename( $wxr_file, '.xml' ) . '-' . $post_type . ".pdf";
+			$filename = dirname( $wxr_file ) . '/' . basename( $wxr_file, '.xml' ) . '-' . $post_type . '.pdf';
 
 			$download_dir = dirname( $wxr_file ) . '/' . basename( $wxr_file, '.xml' );
 
@@ -254,33 +262,35 @@ class WXR_PDF_Worker {
 			// return body->innerhtml
 			$html = preg_replace( '~<(?:!DOCTYPE|/?(?:html|head|body))[^>]*>\s*~i', '', $html );
 
-			$html = $twig->render( 'document.twig', array(
-					'content'	 => $html,
-					'urls'	 => static::$urls,
-					'site'	 => array_filter( $data, 'is_scalar' ), // http://stackoverflow.com/a/13088138/1434155
+			$html = $twig->render(
+				'document.twig',
+				array(
+					'content'  => $html,
+					'urls'     => static::$urls,
+					'site'     => array_filter( $data, 'is_scalar' ), // http://stackoverflow.com/a/13088138/1434155
 					'posttype' => $post_type,
-					'l10n'	 => array(
-						'pretitle'            => __( 'Post Type', 'wxr2pdf' ),
-						'by'                  => __( 'By', 'wxr2pdf' ),
-						'comments'            => __( 'Comments', 'wxr2pdf' ),
-						'name'                => __( 'Name', 'wxr2pdf' ),
-						'email'               => __( 'Email', 'wxr2pdf' ),
-						'url'                 => __( 'URL', 'wxr2pdf' ),
-						'date'                => __( 'Date', 'wxr2pdf' ),
-						'date_format'         => __( 'm/d/Y', 'wxr2pdf' ),
+					'l10n'     => array(
+						'pretitle'       => __( 'Post Type', 'wxr2pdf' ),
+						'by'             => __( 'By', 'wxr2pdf' ),
+						'comments'       => __( 'Comments', 'wxr2pdf' ),
+						'name'           => __( 'Name', 'wxr2pdf' ),
+						'email'          => __( 'Email', 'wxr2pdf' ),
+						'url'            => __( 'URL', 'wxr2pdf' ),
+						'date'           => __( 'Date', 'wxr2pdf' ),
+						'date_format'    => __( 'm/d/Y', 'wxr2pdf' ),
 						//	 'external_files' => __('External files','wxr2pdf')
-						'external_files'      => __( 'Eksterne filer', 'wxr2pdf' )
+						'external_files' => __( 'Eksterne filer', 'wxr2pdf' ),
 					),
-					'doc'	  => array(
-						'title'	   => basename( $wxr_file, '.xml' ),
+					'doc'      => array(
+						'title'       => basename( $wxr_file, '.xml' ),
 						//				 'madeby'	  => __('This PDF is created using WXR2PDF.com', 'wxr2pdf'),
-						'madeby'	  => 'n',
-						'titleprefix' => __( 'File:', 'wxr2pdf' )
-					)
-				) );
+						'madeby'      => 'n',
+						'titleprefix' => __( 'File:', 'wxr2pdf' ),
+					),
+				)
+			);
 
 			//print $html;
-
 
 			$pdf->create( $html );
 
@@ -324,7 +334,7 @@ class WXR_PDF_Worker {
 			if ( 'a' == $img->parentNode->nodeName ) {
 				$img->parentNode->parentNode->replaceChild( $img, $img->parentNode );
 			}
-			$img->removeAttribute('title');
+			$img->removeAttribute( 'title' );
 		}
 		return $dom->saveHTML();
 	}
@@ -332,28 +342,37 @@ class WXR_PDF_Worker {
 
 
 	static function _get_linked_elements( $html, $download_dir, $base_url, $all_post_slugs = array() ) {
+
+		// if ( defined( 'WP_CLI' ) && WP_CLI && WXR2PDF_DEBUG ) {
+		// 	WP_CLI::print_value( array_filter( func_get_args(), 'is_scalar' ) ); // http://stackoverflow.com/a/13088138/1434155
+		// }
+
 		$dom = new DOMDocument();
 		@$dom->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ) /*, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD*/ );
-		$dom->formatOutput = true;
+		$dom->formatOutput       = true;
 		$dom->preserveWhitespace = false;
 
 		$tags = $dom->getElementsByTagName( 'a' );
-		$i = 1;
+		$i    = 1;
 		for ( $k = $tags->length - 1; $k >= 0; $k-- ) {
-			$tag = $tags->item( $k );
-			$url =  $tag->getAttribute( 'href' );
-			$link = ( in_array( substr( $url, strrpos( $url, '.' ) + 1 ), array ( 'pdf' ) ) ) ? $url : '';
-			if ( false !== strpos( $url, $base_url ) && '' !== $link ) {
+			$tag  = $tags->item( $k );
+			$url  = $tag->getAttribute( 'href' );
+			$link = ( in_array( substr( $url, strrpos( $url, '.' ) + 1 ), array( 'pdf' ) ) ) ? $url : '';
+
+			if ( false !== strpos( str_replace( [ 'http://','https://' ],'',$url), str_replace( [ 'http://','https://' ],'',$base_url) ) && '' !== $link ) {
 				if ( ! file_exists( $download_dir ) ) {
-					if (true !== wp_mkdir_p( $download_dir )) {
+					if ( true !== wp_mkdir_p( $download_dir ) ) {
 						continue;
 					}
 				}
 				if ( ! file_exists( $download_dir . '/' . basename( $url ) ) ) {
 					self::copyfile_chunked( $url, $download_dir . '/' . basename( $url ) );
 				}
-				$tag->setAttribute( 'href',  basename( $download_dir ) . '/' . basename( $url ) );
-				self::$urls[] = array( 'url' => basename( $download_dir ) . '/' . basename( $url ), 'txt' => $tag->textContent );
+				$tag->setAttribute( 'href', basename( $download_dir ) . '/' . basename( $url ) );
+				self::$urls[] = array(
+					'url' => basename( $download_dir ) . '/' . basename( $url ),
+					'txt' => $tag->textContent,
+				);
 				//	//create reference link
 				//	$e = $dom->createElement('a', ' [' . $i . ']');
 				//	$a = $dom->appendChild($e);
@@ -364,26 +383,26 @@ class WXR_PDF_Worker {
 
 				// append font awsome
 				$icon_pdf = $dom->createDocumentFragment(); // create fragment
-				$icon_pdf->appendXML('<span style="font-family: fontawesome; vertical-align: bottom;"> &#xf1c1;</span>'); // insert arbitary html into the fragment
-				$tag->appendChild($icon_pdf);
-			} elseif ( false !== strpos( $url, $base_url )  && 0 != ( $slug_id = self::_in_slugs( $url, $all_post_slugs ) ) ) { // internal ref
-				echo "#", $slug_id, "\n";
+				$icon_pdf->appendXML( '<span style="font-family: fontawesome; vertical-align: bottom;"> &#xf1c1;</span>' ); // insert arbitary html into the fragment
+				$tag->appendChild( $icon_pdf );
+			} elseif ( false !== strpos( $url, $base_url ) && 0 != ( $slug_id = self::_in_slugs( $url, $all_post_slugs ) ) ) { // internal ref
+				echo '#', $slug_id, "\n";
 				$tag->removeAttribute( 'href' );
 				$tag->setAttribute( 'href', '#' . $slug_id );
 			} elseif ( false !== strpos( $url, $base_url ) ) { // points to another post type i.e. outside current document so remove link
-				$lnkText = $tag->textContent;
+				$lnkText    = $tag->textContent;
 				$newTxtNode = $dom->createTextNode( $lnkText );
 				$tag->parentNode->replaceChild( $newTxtNode, $tag );
-			} elseif ('' == $tag->getAttribute( 'name' )) {
+			} elseif ( '' == $tag->getAttribute( 'name' ) ) {
 				// $lnkText = $tag->textContent;
 				// $t = sprintf("%s (%s)",$lnkText, $url);
 				// $newTxtNode = $dom->createTextNode( $t );
 				// $tag->parentNode->replaceChild( $newTxtNode, $tag );
 				$icon_external_link = $dom->createDocumentFragment(); // create fragment
-//				$icon_external_link->appendXML('<span style="font-family: fontawesome; vertical-align: bottom;"> &#xf08e;</span>'); // insert arbitary html into the fragment
-				$icon_external_link->appendXML('<span style="vertical-align: bottom;"> (' . $url . ')</span>'); // insert arbitary html into the fragment
-				if (! empty($icon_external_link) ) {
-					$tag->appendChild($icon_external_link);
+				//              $icon_external_link->appendXML('<span style="font-family: fontawesome; vertical-align: bottom;"> &#xf08e;</span>'); // insert arbitary html into the fragment
+				$icon_external_link->appendXML( '<span style="vertical-align: bottom;"> (' . $url . ')</span>' ); // insert arbitary html into the fragment
+				if ( ! empty( $icon_external_link ) ) {
+					$tag->appendChild( $icon_external_link );
 				}
 			}
 		}
@@ -392,20 +411,20 @@ class WXR_PDF_Worker {
 
 	static function _in_slugs( $url, $slugs ) {
 		$slug_id = 0;
-		$query = parse_url( $url, PHP_URL_QUERY );
+		$query   = parse_url( $url, PHP_URL_QUERY );
 		if ( '' != $query ) {
 			$args = wp_parse_args(
-				$query ,
+				$query,
 				array()
 			);
-			if ( isset( $args['p'] ) && array_key_exists( $args['p'] , $slugs ) ) {
+			if ( isset( $args['p'] ) && array_key_exists( $args['p'], $slugs ) ) {
 				$slug_id = $args['p'];
 			}
 		} elseif ( false !== in_array( basename( $url ), array_flip( $slugs ) ) ) {
 			$slug_id = basename( $url );
 		} elseif ( false !== in_array( basename( $url ), $slugs ) ) {
 			$tmp_arr = array_flip( $slugs );
-			$slug_id = $tmp_arr[basename( $url )];
+			$slug_id = $tmp_arr[ basename( $url ) ];
 		}
 		return $slug_id;
 	}
@@ -424,7 +443,7 @@ class WXR_PDF_Worker {
 		 * parse_url breaks a part a URL into it's parts, i.e. host, path,
 		 * query string, etc.
 		 */
-		$parts = parse_url( $infile );
+		$parts    = parse_url( $infile );
 		$i_handle = fsockopen( $parts['host'], 80, $errstr, $errcode, 5 );
 		$o_handle = fopen( $outfile, 'wb' );
 
@@ -432,14 +451,14 @@ class WXR_PDF_Worker {
 			return false;
 		}
 
-		if ( !empty( $parts['query'] ) ) {
+		if ( ! empty( $parts['query'] ) ) {
 			$parts['path'] .= '?' . $parts['query'];
 		}
 
 		/**
 		 * Send the request to the server for the file
 		 */
-		$request = "GET {$parts['path']} HTTP/1.1\r\n";
+		$request  = "GET {$parts['path']} HTTP/1.1\r\n";
 		$request .= "Host: {$parts['host']}\r\n";
 		$request .= "User-Agent: Mozilla/5.0\r\n";
 		$request .= "Keep-Alive: 115\r\n";
@@ -451,9 +470,11 @@ class WXR_PDF_Worker {
 		 * to get the content length.
 		 */
 		$headers = array();
-		while ( !feof( $i_handle ) ) {
+		while ( ! feof( $i_handle ) ) {
 			$line = fgets( $i_handle );
-			if ( $line == "\r\n" ) break;
+			if ( $line == "\r\n" ) {
+				break;
+			}
 			$headers[] = $line;
 		}
 
@@ -464,7 +485,7 @@ class WXR_PDF_Worker {
 		$length = 0;
 		foreach ( $headers as $header ) {
 			if ( stripos( $header, 'Content-Length:' ) === 0 ) {
-				$length = (int)str_replace( 'Content-Length: ', '', $header );
+				$length = (int) str_replace( 'Content-Length: ', '', $header );
 				break;
 			}
 		}
@@ -474,9 +495,9 @@ class WXR_PDF_Worker {
 		 * local file one chunk at a time.
 		 */
 		$cnt = 0;
-		while ( !feof( $i_handle ) ) {
-			$buf = '';
-			$buf = fread( $i_handle, $chunksize );
+		while ( ! feof( $i_handle ) ) {
+			$buf   = '';
+			$buf   = fread( $i_handle, $chunksize );
 			$bytes = fwrite( $o_handle, $buf );
 			if ( $bytes == false ) {
 				return false;
@@ -486,7 +507,9 @@ class WXR_PDF_Worker {
 			/**
 			 * We're done reading when we've reached the conent length
 			 */
-			if ( $cnt >= $length ) break;
+			if ( $cnt >= $length ) {
+				break;
+			}
 		}
 
 		fclose( $i_handle );
@@ -495,58 +518,64 @@ class WXR_PDF_Worker {
 	}
 
 	// from http://stackoverflow.com/a/19995603/1434155
-	static function _find_post($array, $matching) {
-	    foreach ($array as $item) {
-	        $is_match = true;
-	        foreach ($matching as $key => $value) {
+	static function _find_post( $array, $matching ) {
+		foreach ( $array as $item ) {
+			$is_match = true;
+			foreach ( $matching as $key => $value ) {
 
-	            if (is_object($item)) {
-	                if (! isset($item->$key)) {
-	                    $is_match = false;
-	                    break;
-	                }
-	            } else {
-	                if (! isset($item[$key])) {
-	                    $is_match = false;
-	                    break;
-	                }
-	            }
+				if ( is_object( $item ) ) {
+					if ( ! isset( $item->$key ) ) {
+						$is_match = false;
+						break;
+					}
+				} else {
+					if ( ! isset( $item[ $key ] ) ) {
+						$is_match = false;
+						break;
+					}
+				}
 
-	            if (is_object($item)) {
-	                if ($item->$key != $value) {
-	                    $is_match = false;
-	                    break;
-	                }
-	            } else {
-	                if ($item[$key] != $value) {
-	                    $is_match = false;
-	                    break;
-	                } 
-	            }
-	        }
+				if ( is_object( $item ) ) {
+					if ( $item->$key != $value ) {
+						$is_match = false;
+						break;
+					}
+				} else {
+					if ( $item[ $key ] != $value ) {
+						$is_match = false;
+						break;
+					}
+				}
+			}
 
-	        if ($is_match) {
-	            return $item;   
-	        }
-	    }
+			if ( $is_match ) {
+				return $item;
+			}
+		}
 
-	    return false;
+		return false;
 	}
 
-	static function _array_find_element_by_key($key, $form) {
-		if (array_key_exists($key, $form)) {
-			$ret = $form[$key];
+	static function _array_find_element_by_key( $key, $form ) {
+		if ( array_key_exists( $key, $form ) ) {
+			$ret = $form[ $key ];
 			return $ret;
 		}
-		foreach ($form as $k => $v) {
-			if (is_array($v)) {
-				$ret = self::_array_find_element_by_key($key, $form[$k]);
-				if ($ret) {
+		foreach ( $form as $k => $v ) {
+			if ( is_array( $v ) ) {
+				$ret = self::_array_find_element_by_key( $key, $form[ $k ] );
+				if ( $ret ) {
 					return $ret;
 				}
 			}
 		}
-		return FALSE;
+		return false;
+	}
+
+	private static function clidebug( $val ) {
+		if ( defined( 'WP_CLI' ) && WP_CLI && WXR2PDF_DEBUG ) {
+			WP_CLI::print_value( $val );
+		}
 	}
 
 
