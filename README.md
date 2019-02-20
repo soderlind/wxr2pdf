@@ -1,10 +1,10 @@
 # Convert an WordPress Export to PDF
 
 ## OPTIONS
-- `file` : Path to WXR file for parsing.
-- `--posttype=<posttype>`  Select post type. If not set, "post" is used. Separate post types using colon.
-- `--language=<country_CODE>` Loads languages/wxr2pdf_country_CODE.mo
-- `--noimg` Don't include images.
+- `file`: Path to WXR file for parsing.
+- `--posttype=<posttype>`:  Select post type. If not set, `post` is used. Separate post types using colon.
+- `--language=<country_CODE>`: Loads languages/wxr2pdf_country_CODE.mo
+- `--noimg`: Don't include images.
 
 ## EXAMPLES
 ```txt
