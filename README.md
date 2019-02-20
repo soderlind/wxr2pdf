@@ -1,10 +1,14 @@
 # WP-CLI add-on: wxr2pdf, convert an WordPress Export to PDF
 
+## Syntax
+
+`wp wxr-pdf convert [options]` 
+
 ## OPTIONS
-- `file`: Path to WXR file for parsing.
-- `--posttype=<posttype>`:  Select post type. If not set, `post` is used. Separate post types using colon.
-- `--language=<country_CODE>`: Loads languages/wxr2pdf_country_CODE.mo
-- `--noimg`: Don't include images.
+- `file` **required**, path to WXR file for parsing.
+- `--posttype=<posttype>` select post type. If not set, `post` is used. Separate post types using colon.
+- `--language=<country_CODE>` loads languages/wxr2pdf_country_CODE.mo
+- `--noimg` don't include images.
 
 ## EXAMPLES
 ```txt
