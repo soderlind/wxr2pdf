@@ -15,7 +15,7 @@
   wp wxr-pdf convert file.wxr
   wp wxr-pdf convert file.wxr --language=nb_NO
   wp wxr-pdf convert file.wxr --noimg
-  wp wxr-pdf convert file.wxr --posttype=page
+  wp wxr-pdf convert file.wxr --posttype=post:page
   wp wxr-pdf convert file.wxr --nocomments
 ```
 ## Installation and activation
