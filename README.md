@@ -24,7 +24,7 @@ In `wp-content/plugins` do
 1. `git clone https://github.com/soderlind/wxr2pdf`
 1. `wp plugin activate wxr2pdf`
 
-# Copyright and License
+## Copyright and License
 
 wxr2pdf is copyright 2017 Per Soderlind
 
