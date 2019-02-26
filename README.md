@@ -18,6 +18,9 @@
   wp wxr2pdf convert file.wxr --posttype=post:page
   wp wxr2pdf convert file.wxr --nocomments
 ```
+
+[Example PDF](wxr2pdf-example.pdf) created using `wp wxr2pdf convert --posttype=post wxr2pdf.WordPress.2019-02-26.xml`
+
 ## Installation and activation
 In `wp-content/plugins` do
 

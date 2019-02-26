@@ -283,8 +283,7 @@ class WXR_PDF_Worker {
 					],
 					'doc'      => [
 						'title'       => basename( $wxr_file, '.xml' ),
-						//				 'madeby'	  => __('This PDF is created using WXR2PDF.com', 'wxr2pdf'),
-						'madeby'      => 'n',
+										 'madeby'	  => 'This PDF is created using wxr2pdf',
 						'titleprefix' => __( 'File:', 'wxr2pdf' ),
 					],
 				]
@@ -401,7 +400,7 @@ class WXR_PDF_Worker {
 				$icon_external_link = $dom->createDocumentFragment(); // create fragment
 				//              $icon_external_link->appendXML('<span style="font-family: fontawesome; vertical-align: bottom;"> &#xf08e;</span>'); // insert arbitary html into the fragment
 				$icon_external_link->appendXML( '<span style="vertical-align: bottom;"> (' . $url . ')</span>' ); // insert arbitary html into the fragment
-				if ( ! empty( $icon_external_link ) ) {
+				if ( $tag && ! empty( $icon_external_link ) ) {
 					$tag->appendChild( $icon_external_link );
 				}
 			}
