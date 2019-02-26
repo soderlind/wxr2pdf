@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: WXR PDF CLI
-Version: 0.0.2
+Version: 0.0.3
 Description: Convert a WXR to a PDF document
 Author: Per Soderlind
 Author URI: https://soderlind.no
-Plugin URI: https://github.com/soderlind/wxr-pdf-cli
+Plugin URI: https://github.com/soderlind/wxr2pdf
 License: GPL
 Text Domain: wxr2pdf
 Domain Path: /languages
