@@ -2,7 +2,7 @@
 
 ## Syntax
 
-`wp wxr-pdf convert [options]` 
+`wp wxr2pdf convert [options]`
 
 ## OPTIONS
 - `file` **required**, path to WXR file for parsing.
@@ -12,11 +12,11 @@
 
 ## EXAMPLES
 ```txt
-  wp wxr-pdf convert file.wxr
-  wp wxr-pdf convert file.wxr --language=nb_NO
-  wp wxr-pdf convert file.wxr --noimg
-  wp wxr-pdf convert file.wxr --posttype=post:page
-  wp wxr-pdf convert file.wxr --nocomments
+  wp wxr2pdf convert file.wxr
+  wp wxr2pdf convert file.wxr --language=nb_NO
+  wp wxr2pdf convert file.wxr --noimg
+  wp wxr2pdf convert file.wxr --posttype=post:page
+  wp wxr2pdf convert file.wxr --nocomments
 ```
 ## Installation and activation
 In `wp-content/plugins` do
