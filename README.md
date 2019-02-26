@@ -20,6 +20,7 @@
 ```
 
 [Example PDF](wxr2pdf-example.pdf) created using `wp wxr2pdf convert --posttype=post wxr2pdf.WordPress.2019-02-26.xml`
+- Content from wptest.io
 
 ## Installation and activation
 In `wp-content/plugins` do
