@@ -15,7 +15,9 @@ define( 'WXR2PDF_PATH', __DIR__ );
 //define( 'WXR2PDF_URL',   plugin_dir_url( __FILE__ ));
 define( 'WXR2PDF_CACHE', WXR2PDF_PATH . '/var/pdf' );
 define( 'WXR2PDF_VERSION', '0.0.2' );
-define( 'WXR2PDF_DEBUG', true );
+define( 'WXR2PDF_DEBUG', false );
+
+require_once WXR2PDF_PATH . '/vendor/autoload.php';
 
 function wxr_pdf_cli_init() {
 	if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -95,22 +97,26 @@ class WXR_PDF_Worker {
 		$str_post_type = ( isset( $assoc_args['posttype'] ) && '' != $assoc_args['posttype'] ) ? $assoc_args['posttype'] : 'post';
 		//		$post_types = array_flip(explode(':', $str_post_type));
 		$post_types = explode( ':', $str_post_type );
+		$total_posts = 0;
+		foreach ($post_types as $post_type) {
+			$total_posts += ( wp_count_posts( $post_type )->publish ) ? wp_count_posts( $post_type )->publish : 0;
+		}
+
+
 
 		if ( isset( $assoc_args['language'] ) ) {
 			$mofile = WXR2PDF_PATH . '/languages/' . $assoc_args['language'] . '.mo';
 			load_textdomain( 'wxr2pdf', $mofile );
 		}
 		//add twig template engine
-		require_once WXR2PDF_PATH . '/lib/Twig/Autoloader.php';
-		Twig_Autoloader::register();
-
-		$loader = new Twig_Loader_Filesystem( dirname( __FILE__ ) . '/templates/twig' );
-		$twig   = new Twig_Environment(
+		$loader = new \Twig\Loader\FilesystemLoader( dirname( __FILE__ ) . '/templates/twig' );
+		$twig   = new \Twig\Environment(
 			$loader,
 			[
-				//'cache' => dirname( __FILE__ ) . '/var/twig_cache',
+				'cache' => WXR2PDF_PATH . '/var/twig',
 			]
 		);
+
 		// include WXR file parsers
 		require_once dirname( __FILE__ ) . '/inc/class-wxr-parser.php';
 
@@ -123,8 +129,11 @@ class WXR_PDF_Worker {
 
 		$attachments = $parser->parse( $wxr_file, 'attachment' );
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			// WP_CLI::print_value( $attachments['posts'] );
+			WP_CLI::print_value( $total_posts );
 		}
+
+
+		$progress_bar = \WP_CLI\Utils\make_progress_bar( 'Making PDF: ', $total_posts );
 
 		foreach ( $post_types as $post_type ) {
 			$data = [];
@@ -137,6 +146,7 @@ class WXR_PDF_Worker {
 			//if ( defined( 'WP_CLI' ) && WP_CLI ) WP_CLI::print_value( $data['posts'] );
 			$posts = $sort_array = [];
 			foreach ( $data['posts'] as $key => $post ) {
+
 				if ( isset( $post['post_type'] ) && /*isset($post_types[$post['post_type']]) && */'publish' == $post['status'] ) {
 					//unset( $post['postmeta'] );
 
@@ -190,7 +200,9 @@ class WXR_PDF_Worker {
 
 					//add to posts array
 					$posts[] = $post;
+					$progress_bar->tick();
 				}
+
 			}
 
 			// from from http://php.net/manual/en/function.ksort.php#98465
@@ -283,7 +295,7 @@ class WXR_PDF_Worker {
 					],
 					'doc'      => [
 						'title'       => basename( $wxr_file, '.xml' ),
-										 'madeby'	  => 'This PDF is created using wxr2pdf',
+						'madeby'      => 'This PDF is created using wxr2pdf',
 						'titleprefix' => __( 'File:', 'wxr2pdf' ),
 					],
 				]
@@ -298,7 +310,10 @@ class WXR_PDF_Worker {
 			// }
 
 			$pdf->save( $filename );
+
+
 		}
+		$progress_bar->finish();
 	}
 
 
@@ -518,7 +533,7 @@ class WXR_PDF_Worker {
 
 	// from http://stackoverflow.com/a/19995603/1434155
 	static function _find_post( $array, $matching ) {
-		foreach ( $array as $item ) {
+		foreach ( (array) $array as $item ) {
 			$is_match = true;
 			foreach ( $matching as $key => $value ) {
 

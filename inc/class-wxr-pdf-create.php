@@ -2,8 +2,6 @@
 
 use Mpdf\Mpdf;
 
-require_once WXR2PDF_PATH . '/vendor/autoload.php';
-
 class WXR2PDF_Create extends  WXR2PDF_Options {
 
 	private static $instance;
