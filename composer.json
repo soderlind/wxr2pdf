@@ -1,5 +1,25 @@
 {
-    "require": {
-        "mpdf/mpdf": "^7.1"
-    }
+    "name": "soderlind/wxr2psd",
+    "description": "Convert an WordPress Export to PDF",
+    "version": "0.0.3",
+    "type": "wordpress-plugin",
+    "keywords": ["wp-cli", "convert", "pdf"],
+    "homepage": "https://github.com/soderlind/wxr2pdf",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Per Søderlind",
+            "email": "per@soderlind.no",
+            "homepage": "https://soderlind.no",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/soderlind/wxr2pdf/issues",
+        "source": "https://github.com/soderlind/wxr2pdf"
+    },
+	"require": {
+		"mpdf/mpdf": "^7.1",
+		"twig/twig": "^2.0"
+	}
 }
