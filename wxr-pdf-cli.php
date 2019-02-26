@@ -43,11 +43,11 @@ function wxr_pdf_cli_init() {
 			 *
 			 * ## EXAMPLES
 			 *
-			 *   wp wxr-pdf convert file.wxr
-			 *   wp wxr-pdf convert file.wxr --language=nb_NO
-			 *   wp wxr-pdf convert file.wxr --noimg
-			 *   wp wxr-pdf convert file.wxr --posttype=page
-			 *   wp wxr-pdf convert file.wxr --nocomments
+			 *   wp wxr2pdf convert file.wxr
+			 *   wp wxr2pdf convert file.wxr --language=nb_NO
+			 *   wp wxr2pdf convert file.wxr --noimg
+			 *   wp wxr2pdf convert file.wxr --posttype=page
+			 *   wp wxr2pdf convert file.wxr --nocomments
 			 *
 			 * @synopsis <file> [--language=<country_CODE>] [--noimg] [--posttype=<posttype>]
 			 */
@@ -63,17 +63,17 @@ function wxr_pdf_cli_init() {
 					}
 					//wp_async_task_add( 'wxr2pdf_worker', array( 'file' => $wxr_file, 'assoc_args' => $assoc_args ) );
 					WXR_PDF_Worker::wxr2pdf_callback(
-						array(
+						[
 							'file'       => $wxr_file,
 							'assoc_args' => $assoc_args,
-						)
+						]
 					);
 				}
 
 				WP_CLI::success( 'Done!' );
 			}
 		}
-		WP_CLI::add_command( 'wxr-pdf', 'WXR_PDF_Command' );
+		WP_CLI::add_command( 'wxr2pdf', 'WXR_PDF_Command' );
 	}
 }
 
@@ -86,7 +86,7 @@ if ( defined( 'WP_CLI' ) ) {
  */
 class WXR_PDF_Worker {
 
-	static $urls = array();
+	static $urls = [];
 
 	static function wxr2pdf_callback( $args ) {
 
@@ -107,9 +107,9 @@ class WXR_PDF_Worker {
 		$loader = new Twig_Loader_Filesystem( dirname( __FILE__ ) . '/templates/twig' );
 		$twig   = new Twig_Environment(
 			$loader,
-			array(
+			[
 				//'cache' => dirname( __FILE__ ) . '/var/twig_cache',
-			)
+			]
 		);
 		// include WXR file parsers
 		require_once dirname( __FILE__ ) . '/inc/class-wxr-parser.php';
@@ -127,7 +127,7 @@ class WXR_PDF_Worker {
 		}
 
 		foreach ( $post_types as $post_type ) {
-			$data = array();
+			$data = [];
 			$data = $parser->parse( $wxr_file, $post_type );
 			// if (! $data) {
 			//  WP_CLI::line( WP_CLI::colorize('%RERROR!%n'));
@@ -135,7 +135,7 @@ class WXR_PDF_Worker {
 			//  exit();
 			// }
 			//if ( defined( 'WP_CLI' ) && WP_CLI ) WP_CLI::print_value( $data['posts'] );
-			$posts = $sort_array = array();
+			$posts = $sort_array = [];
 			foreach ( $data['posts'] as $key => $post ) {
 				if ( isset( $post['post_type'] ) && /*isset($post_types[$post['post_type']]) && */'publish' == $post['status'] ) {
 					//unset( $post['postmeta'] );
@@ -148,7 +148,7 @@ class WXR_PDF_Worker {
 					$post['author_first_name']   = $data['authors'][ $post['post_author'] ]['author_first_name'];
 					$post['author_last_name']    = $data['authors'][ $post['post_author'] ]['author_last_name'];
 
-					$category = $tag = array();
+					$category = $tag = [];
 					if ( isset( $post['terms'] ) && is_array( $post['terms'] ) ) {
 						foreach ( $post['terms'] as $term ) {
 							switch ( $term['domain'] ) {
@@ -173,9 +173,9 @@ class WXR_PDF_Worker {
 					// 	}
 					// }
 					$attachment_url = '';
-					if ( false != ( $featured = self::_find_post( $post['postmeta'], array( 'key' => '_thumbnail_id' ) ) ) ) {
+					if ( false != ( $featured = self::_find_post( $post['postmeta'], [ 'key' => '_thumbnail_id' ] ) ) ) {
 						$thumb_id       = $featured['value'];
-						$attachment     = self::_find_post( $attachments['posts'], array( 'post_id' => $thumb_id ) );
+						$attachment     = self::_find_post( $attachments['posts'], [ 'post_id' => $thumb_id ] );
 						$attachment_url = ! empty( $attachment['attachment_url'] ) ? $attachment['attachment_url'] : $attachment['guid'];
 					}
 					$post['featured_image'] = $attachment_url;
@@ -183,7 +183,7 @@ class WXR_PDF_Worker {
 					//sortarray - from http://php.net/manual/en/function.ksort.php#98465
 					foreach ( $post as $key => $value ) {
 						if ( ! isset( $sort_array[ $key ] ) ) {
-							$sort_array[ $key ] = array();
+							$sort_array[ $key ] = [];
 						}
 						$sort_array[ $key ][] = $value;
 					}
@@ -203,7 +203,7 @@ class WXR_PDF_Worker {
 			}
 			array_multisort( $sort_array[ $orderby ], SORT_DESC, $posts );
 
-			$all_post_slugs = array();
+			$all_post_slugs = [];
 			$post_ids       = $sort_array['post_id'];
 			foreach ( $sort_array['post_name'] as $key => $post_name ) {
 				$all_post_slugs[ $post_ids[ $key ] ] = $post_name;
@@ -223,11 +223,11 @@ class WXR_PDF_Worker {
 
 			$html = $twig->render(
 				'page.twig',
-				array(
+				[
 					'posts'    => $posts,
 					'site'     => array_filter( $data, 'is_scalar' ), // http://stackoverflow.com/a/13088138/1434155
 					'posttype' => $post_type,
-					'l10n'     => array(
+					'l10n'     => [
 						'pretitle'    => __( 'Post Type', 'wxr2pdf' ),
 						'by'          => __( 'By', 'wxr2pdf' ),
 						'comments'    => __( 'Comments', 'wxr2pdf' ),
@@ -236,14 +236,14 @@ class WXR_PDF_Worker {
 						'url'         => __( 'URL', 'wxr2pdf' ),
 						'date'        => __( 'Date', 'wxr2pdf' ),
 						'date_format' => __( 'm/d/Y', 'wxr2pdf' ),
-					),
-					'doc'      => array(
+					],
+					'doc'      => [
 						'title'       => basename( $wxr_file, '.xml' ),
 						//'madeby'	  => __('This PDF is created using WXR2PDF.com', 'wxr2pdf'),
 						'madeby'      => 'x',
 						'titleprefix' => __( 'File:', 'wxr2pdf' ),
-					),
-				)
+					],
+				]
 			);
 			$html = apply_filters( 'the_content', $html );
 
@@ -264,12 +264,12 @@ class WXR_PDF_Worker {
 
 			$html = $twig->render(
 				'document.twig',
-				array(
+				[
 					'content'  => $html,
 					'urls'     => static::$urls,
 					'site'     => array_filter( $data, 'is_scalar' ), // http://stackoverflow.com/a/13088138/1434155
 					'posttype' => $post_type,
-					'l10n'     => array(
+					'l10n'     => [
 						'pretitle'       => __( 'Post Type', 'wxr2pdf' ),
 						'by'             => __( 'By', 'wxr2pdf' ),
 						'comments'       => __( 'Comments', 'wxr2pdf' ),
@@ -280,14 +280,14 @@ class WXR_PDF_Worker {
 						'date_format'    => __( 'm/d/Y', 'wxr2pdf' ),
 						//	 'external_files' => __('External files','wxr2pdf')
 						'external_files' => __( 'Eksterne filer', 'wxr2pdf' ),
-					),
-					'doc'      => array(
+					],
+					'doc'      => [
 						'title'       => basename( $wxr_file, '.xml' ),
 						//				 'madeby'	  => __('This PDF is created using WXR2PDF.com', 'wxr2pdf'),
 						'madeby'      => 'n',
 						'titleprefix' => __( 'File:', 'wxr2pdf' ),
-					),
-				)
+					],
+				]
 			);
 
 			//print $html;
@@ -310,7 +310,7 @@ class WXR_PDF_Worker {
 		$images = $dom->getElementsByTagName( 'img' );
 
 		// from http://us2.php.net/manual/en/domnode.removechild.php#90292
-		$images_to_remove = array();
+		$images_to_remove = [];
 		foreach ( $images as $img ) {
 			$images_to_remove[] = $img;
 		}
@@ -341,7 +341,7 @@ class WXR_PDF_Worker {
 
 
 
-	static function _get_linked_elements( $html, $download_dir, $base_url, $all_post_slugs = array() ) {
+	static function _get_linked_elements( $html, $download_dir, $base_url, $all_post_slugs = [] ) {
 
 		// if ( defined( 'WP_CLI' ) && WP_CLI && WXR2PDF_DEBUG ) {
 		// 	WP_CLI::print_value( array_filter( func_get_args(), 'is_scalar' ) ); // http://stackoverflow.com/a/13088138/1434155
@@ -357,9 +357,9 @@ class WXR_PDF_Worker {
 		for ( $k = $tags->length - 1; $k >= 0; $k-- ) {
 			$tag  = $tags->item( $k );
 			$url  = $tag->getAttribute( 'href' );
-			$link = ( in_array( substr( $url, strrpos( $url, '.' ) + 1 ), array( 'pdf' ) ) ) ? $url : '';
+			$link = ( in_array( substr( $url, strrpos( $url, '.' ) + 1 ), [ 'pdf' ] ) ) ? $url : '';
 
-			if ( false !== strpos( str_replace( [ 'http://','https://' ],'',$url), str_replace( [ 'http://','https://' ],'',$base_url) ) && '' !== $link ) {
+			if ( false !== strpos( str_replace( [ 'http://', 'https://' ], '', $url ), str_replace( [ 'http://', 'https://' ], '', $base_url ) ) && '' !== $link ) {
 				if ( ! file_exists( $download_dir ) ) {
 					if ( true !== wp_mkdir_p( $download_dir ) ) {
 						continue;
@@ -369,10 +369,10 @@ class WXR_PDF_Worker {
 					self::copyfile_chunked( $url, $download_dir . '/' . basename( $url ) );
 				}
 				$tag->setAttribute( 'href', basename( $download_dir ) . '/' . basename( $url ) );
-				self::$urls[] = array(
+				self::$urls[] = [
 					'url' => basename( $download_dir ) . '/' . basename( $url ),
 					'txt' => $tag->textContent,
-				);
+				];
 				//	//create reference link
 				//	$e = $dom->createElement('a', ' [' . $i . ']');
 				//	$a = $dom->appendChild($e);
@@ -415,7 +415,7 @@ class WXR_PDF_Worker {
 		if ( '' != $query ) {
 			$args = wp_parse_args(
 				$query,
-				array()
+				[]
 			);
 			if ( isset( $args['p'] ) && array_key_exists( $args['p'], $slugs ) ) {
 				$slug_id = $args['p'];
@@ -469,7 +469,7 @@ class WXR_PDF_Worker {
 		 * Now read the headers from the remote server. We'll need
 		 * to get the content length.
 		 */
-		$headers = array();
+		$headers = [];
 		while ( ! feof( $i_handle ) ) {
 			$line = fgets( $i_handle );
 			if ( $line == "\r\n" ) {
@@ -581,4 +581,4 @@ class WXR_PDF_Worker {
 
 }
 
-add_action( 'wxr2pdf_worker', array( 'WXR_PDF_Worker', 'wxr2pdf_callback' ) );
+add_action( 'wxr2pdf_worker', [ 'WXR_PDF_Worker', 'wxr2pdf_callback' ] );
