@@ -399,8 +399,8 @@ class WXR_PDF_Worker {
 				// $tag->parentNode->replaceChild( $newTxtNode, $tag );
 				$icon_external_link = $dom->createDocumentFragment(); // create fragment
 				//              $icon_external_link->appendXML('<span style="font-family: fontawesome; vertical-align: bottom;"> &#xf08e;</span>'); // insert arbitary html into the fragment
-				$icon_external_link->appendXML( '<span style="vertical-align: bottom;"> (' . $url . ')</span>' ); // insert arbitary html into the fragment
-				if ( $tag && ! empty( $icon_external_link ) ) {
+				$icon_external_link->appendXML( htmlentities( '<span style="vertical-align: bottom;"> (' . $url . ')</span>' ) ); // insert arbitary html into the fragment
+				if ( ! empty( $icon_external_link ) ) {
 					$tag->appendChild( $icon_external_link );
 				}
 			}
