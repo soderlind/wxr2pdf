@@ -1,2 +1,4 @@
 #
 var/pdf/font/
+vendor/*
+composer.lock
