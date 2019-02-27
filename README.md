@@ -2,7 +2,7 @@
 
 ## Syntax
 
-`wp wxr2pdf convert [options]`
+`wp wxr2pdf [options]`
 
 ## OPTIONS
 - `file` **required**, path to WXR file for parsing.
@@ -12,25 +12,26 @@
 
 ## EXAMPLES
 ```txt
-  wp wxr2pdf convert file.wxr
-  wp wxr2pdf convert file.wxr --language=nb_NO
-  wp wxr2pdf convert file.wxr --noimg
-  wp wxr2pdf convert file.wxr --posttype=post:page
-  wp wxr2pdf convert file.wxr --nocomments
+  wp wxr2pdf wxr-file.xml
+  wp wxr2pdf wxr-file.xml --language=nb_NO
+  wp wxr2pdf wxr-file.xml --noimg
+  wp wxr2pdf wxr-file.xml --posttype=post:page
+  wp wxr2pdf wxr-file.xml --nocomments
 ```
 
-[Example PDF](wxr2pdf-example.pdf) created using `wp wxr2pdf convert --posttype=post wxr2pdf.WordPress.2019-02-26.xml`
-- Content from wptest.io
+The [example PDF](wxr2pdf-example.pdf) is created using `wp wxr2pdf --posttype=post wxr2pdf.WordPress.2019-02-26.xml`
+- Site content from wptest.io
 
 ## Installation and activation
 In `wp-content/plugins` do
 
 1. `git clone https://github.com/soderlind/wxr2pdf`
+1. in `composer install`
 1. `wp plugin activate wxr2pdf`
 
 ## Copyright and License
 
-wxr2pdf is copyright 2017 Per Soderlind
+wxr2pdf is copyright 2019 Per Soderlind
 
 wxr2pdf is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
 
