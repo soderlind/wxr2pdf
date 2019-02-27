@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: WXR PDF CLI
-Version: 0.0.3
+Version: 0.0.4
 Description: Convert a WXR to a PDF document
 Author: Per Soderlind
 Author URI: https://soderlind.no
@@ -79,8 +79,3 @@ class Command {
 	}
 }
 \WP_CLI::add_command( 'wxr2pdf', __NAMESPACE__ . '\Command' );
-
-
-
-
-// add_action( 'wxr2pdf_worker', [ 'Worker', 'wxr2pdf_callback' ] );
