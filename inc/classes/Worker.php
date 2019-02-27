@@ -35,13 +35,7 @@ class Worker {
 			]
 		);
 
-		// include WXR file parsers
-		// require_once dirname( __FILE__ ) . '/inc/class-wxr-parser.php';
-
-		//
-		// require_once WXR2PDF_PATH . '/inc/class-wxr-pdf-create.php';
-
-		$pdf = Create::get_instance();
+		$pdf = CreatePDF::get_instance();
 
 		$parser = new Parser();
 
