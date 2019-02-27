@@ -21,5 +21,10 @@
 	"require": {
 		"mpdf/mpdf": "^7.1",
 		"twig/twig": "^2.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Soderlind\\WXR2PDF\\": "inc/classes"
+		}
 	}
 }
