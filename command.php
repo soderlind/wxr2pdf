@@ -1,25 +1,30 @@
 <?php
-/*
-Plugin Name: WXR PDF CLI
-Version: 0.0.4
-Description: Convert a WXR to a PDF document
-Author: Per Soderlind
-Author URI: https://soderlind.no
-Plugin URI: https://github.com/soderlind/wxr2pdf
-License: GPL
-Text Domain: wxr2pdf
-Domain Path: /languages
-*/
+/**
+ * WXR2PDF
+ *
+ * @package     Soderlind\WXR2PDF
+ * @author      Per Soderlind
+ * @copyright   2019 Per Soderlind
+ * @license     GPL-2.0+
+ *
+ * @wordpress-plugin
+ * Plugin Name: WXR2PDF
+ * Plugin URI: https://github.com/soderlind/wxr2pdf
+ * GitHub Plugin URI: https://github.com/soderlind/wxr2pdf
+ * Description: WP-CLI add-on: wxr2pdf, convert an WordPress Export to PDF
+ * Version:     0.0.4
+ * Author:      Per Soderlind
+ * Author URI:  https://soderlind.no
+ * Text Domain: wxr2pdf
+ * License:     GPL-2.0+
+ * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+ */
 
 namespace Soderlind\WXR2PDF;
-! defined( 'WP_CLI' ) and exit;
-
-
-
+! defined( 'ABSPATH' ) and exit;
 define( 'WXR2PDF_PATH', __DIR__ );
-//define( 'WXR2PDF_URL',   plugin_dir_url( __FILE__ ));
 define( 'WXR2PDF_CACHE', WXR2PDF_PATH . '/var/pdf' );
-define( 'WXR2PDF_VERSION', '0.0.2' );
+define( 'WXR2PDF_VERSION', '0.0.4' );
 define( 'WXR2PDF_DEBUG', false );
 
 require_once WXR2PDF_PATH . '/vendor/autoload.php';
@@ -48,15 +53,15 @@ class Command {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *   wp wxr2pdf convert file.wxr
-	 *   wp wxr2pdf convert file.wxr --language=nb_NO
-	 *   wp wxr2pdf convert file.wxr --noimg
-	 *   wp wxr2pdf convert file.wxr --posttype=page
-	 *   wp wxr2pdf convert file.wxr --nocomments
+	 *   wp wxr2pdf wxr-file.xml
+	 *   wp wxr2pdf wxr-file.xml --language=nb_NO
+	 *   wp wxr2pdf wxr-file.xml --noimg
+	 *   wp wxr2pdf wxr-file.xml --posttype=page
+	 *   wp wxr2pdf wxr-file.xml --nocomments
 	 *
 	 * @synopsis <file> [--language=<country_CODE>] [--noimg] [--posttype=<posttype>]
 	 */
-	function convert( $args, $assoc_args ) {
+	function __invoke( $args, $assoc_args ) {
 		if ( $args ) {
 			list( $wxr_file ) = $args;
 
@@ -66,7 +71,6 @@ class Command {
 					\WP_CLI::colorize( sprintf( 'File  "%%R%s%%n" not found.', $wxr_file ) )
 				);
 			}
-			//wp_async_task_add( 'wxr2pdf_worker', array( 'file' => $wxr_file, 'assoc_args' => $assoc_args ) );
 			Worker::callback(
 				[
 					'file'       => $wxr_file,
@@ -74,8 +78,10 @@ class Command {
 				]
 			);
 		}
-
 		\WP_CLI::success( 'Done!' );
 	}
 }
-\WP_CLI::add_command( 'wxr2pdf', __NAMESPACE__ . '\Command' );
+
+if ( class_exists('WP_CLI')) {
+	\WP_CLI::add_command( 'wxr2pdf', __NAMESPACE__ . '\Command' );
+}
