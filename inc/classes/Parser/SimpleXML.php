@@ -2,6 +2,7 @@
 
 namespace Soderlind\WXR2PDF\Parser;
 ! defined( 'WP_CLI' ) and exit;
+
 /**
  * WXR Parser that makes use of the SimpleXML PHP extension.
  */

@@ -1,8 +1,8 @@
 <?php
 
 namespace Soderlind\WXR2PDF;
-
 ! defined( 'WP_CLI' ) and exit;
+
 
 
 use Mpdf\Mpdf;

@@ -40,10 +40,6 @@ class Worker {
 		$parser = new Parser();
 
 		$attachments = $parser->parse( $wxr_file, 'attachment' );
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			\WP_CLI::print_value( $total_posts );
-		}
-
 
 		$progress_bar = \WP_CLI\Utils\make_progress_bar( 'Making PDF: ', $total_posts );
 
@@ -95,7 +91,7 @@ class Worker {
 					// 	}
 					// }
 					$attachment_url = '';
-					if ( false != ( $featured = self::_find_post( $post['postmeta'], [ 'key' => '_thumbnail_id' ] ) ) ) {
+					if ( isset( $post['postmeta'] ) && false != ( $featured = self::_find_post( $post['postmeta'], [ 'key' => '_thumbnail_id' ] ) ) ) {
 						$thumb_id       = $featured['value'];
 						$attachment     = self::_find_post( $attachments['posts'], [ 'post_id' => $thumb_id ] );
 						$attachment_url = ! empty( $attachment['attachment_url'] ) ? $attachment['attachment_url'] : $attachment['guid'];
