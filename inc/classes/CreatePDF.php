@@ -7,7 +7,7 @@ namespace Soderlind\WXR2PDF;
 
 use Mpdf\Mpdf;
 
-class Create extends Options {
+class CreatePDF extends Options {
 
 	private static $instance;
 
