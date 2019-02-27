@@ -4,13 +4,13 @@
 
 `wp wxr2pdf [options]`
 
-## OPTIONS
+## Options
 - `file` **required**, path to WXR file for parsing.
 - `--posttype=<posttype>` select post type. If not set, `post` is used. Separate post types using colon.
 - `--language=<country_CODE>` loads languages/wxr2pdf_country_CODE.mo
 - `--noimg` don't include images.
 
-## EXAMPLES
+## Examples
 ```txt
   wp wxr2pdf wxr-file.xml
   wp wxr2pdf wxr-file.xml --language=nb_NO
