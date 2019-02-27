@@ -12,7 +12,7 @@
  * Plugin URI: https://github.com/soderlind/wxr2pdf
  * GitHub Plugin URI: https://github.com/soderlind/wxr2pdf
  * Description: WP-CLI add-on: wxr2pdf, convert an WordPress Export to PDF
- * Version:     0.0.4
+ * Version:     0.0.5
  * Author:      Per Soderlind
  * Author URI:  https://soderlind.no
  * Text Domain: wxr2pdf
@@ -24,7 +24,7 @@ namespace Soderlind\WXR2PDF;
 ! defined( 'ABSPATH' ) and exit;
 define( 'WXR2PDF_PATH', __DIR__ );
 define( 'WXR2PDF_CACHE', WXR2PDF_PATH . '/var/pdf' );
-define( 'WXR2PDF_VERSION', '0.0.4' );
+define( 'WXR2PDF_VERSION', '0.0.5' );
 define( 'WXR2PDF_DEBUG', false );
 
 require_once WXR2PDF_PATH . '/vendor/autoload.php';
