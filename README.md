@@ -23,11 +23,10 @@ The [example PDF](wxr2pdf-example.pdf) is created using `wp wxr2pdf --posttype=p
 - Site content from wptest.io
 
 ## Installation and activation
-In `wp-content/plugins` do
 
-1. `git clone https://github.com/soderlind/wxr2pdf`
+1. In `wp-content/plugins` do `git clone https://github.com/soderlind/wxr2pdf`
 1. In `wp-content/plugins/wxr2pdf` run `composer install`
-1. `wp plugin activate wxr2pdf`
+1. Activate the plugin: `wp plugin activate wxr2pdf`
 
 ## Copyright and License
 
