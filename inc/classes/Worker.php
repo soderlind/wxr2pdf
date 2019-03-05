@@ -14,13 +14,11 @@ class Worker {
 		$assoc_args    = $args['assoc_args'];
 		$str_post_type = ( isset( $assoc_args['posttype'] ) && '' != $assoc_args['posttype'] ) ? $assoc_args['posttype'] : 'post';
 		//		$post_types = array_flip(explode(':', $str_post_type));
-		$post_types = explode( ':', $str_post_type );
+		$post_types  = explode( ':', $str_post_type );
 		$total_posts = 0;
-		foreach ($post_types as $post_type) {
+		foreach ( $post_types as $post_type ) {
 			$total_posts += ( wp_count_posts( $post_type )->publish ) ? wp_count_posts( $post_type )->publish : 0;
 		}
-
-
 
 		if ( isset( $assoc_args['language'] ) ) {
 			$mofile = WXR2PDF_PATH . '/languages/' . $assoc_args['language'] . '.mo';
@@ -35,7 +33,7 @@ class Worker {
 			]
 		);
 
-		$pdf = CreatePDF::get_instance();
+		$pdf = CreatePDF::get_instance( $assoc_args );
 
 		$parser = new Parser();
 
@@ -46,18 +44,10 @@ class Worker {
 		foreach ( $post_types as $post_type ) {
 			$data = [];
 			$data = $parser->parse( $wxr_file, $post_type );
-			// if (! $data) {
-			//  \WP_CLI::line( \WP_CLI::colorize('%RERROR!%n'));
-			//  \WP_CLI::log( $parser->error_message );
-			//  exit();
-			// }
-			//if ( defined( 'WP_CLI' ) && WP_CLI ) \WP_CLI::print_value( $data['posts'] );
 			$posts = $sort_array = [];
 			foreach ( $data['posts'] as $key => $post ) {
 
-				if ( isset( $post['post_type'] ) && /*isset($post_types[$post['post_type']]) && */'publish' == $post['status'] ) {
-					//unset( $post['postmeta'] );
-
+				if ( isset( $post['post_type'] ) && 'publish' == $post['status'] ) {
 					/*
 					 * test if variables are set
 					 */
@@ -83,13 +73,6 @@ class Worker {
 						$post['tag']      = implode( ' ,', $tag );
 					}
 
-					// foreach ($post['postmeta'] as $element) {
-					// 	$thumb_id = '0';
-					// 	if (isset($element['key']) && '_thumbnail_id' == $element['key']) {
-					// 		$thumb_id = $element['value'];
-					// 		break;
-					// 	}
-					// }
 					$attachment_url = '';
 					if ( isset( $post['postmeta'] ) && false != ( $featured = self::_find_post( $post['postmeta'], [ 'key' => '_thumbnail_id' ] ) ) ) {
 						$thumb_id       = $featured['value'];
@@ -110,7 +93,6 @@ class Worker {
 					$posts[] = $post;
 					$progress_bar->tick();
 				}
-
 			}
 
 			// from from http://php.net/manual/en/function.ksort.php#98465
@@ -129,15 +111,8 @@ class Worker {
 				$all_post_slugs[ $post_ids[ $key ] ] = $post_name;
 			}
 
-			//$all_post_slugs = array_merge($sort_array['post_name'], $sort_array['post_name']);
-
 			self::clidebug( $all_post_slugs );
-			//if ( defined('WP_CLI') && WP_CLI ) \WP_CLI::print_value($posts);
-			//printf("<pre>%s</pre>",print_r($sort_array['post_name'],true)); exit();
-
 			self::clidebug( array_filter( $data, 'is_scalar' ) ); // http://stackoverflow.com/a/13088138/1434155
-			// if ( defined('WP_CLI') && WP_CLI ) \WP_CLI::print_value($posts);
-			// exit();
 
 			$pdf->init( $posts[0], $data['site_title'], $data['site_decription'] );
 
@@ -159,8 +134,7 @@ class Worker {
 					],
 					'doc'      => [
 						'title'       => basename( $wxr_file, '.xml' ),
-						//'madeby'	  => __('This PDF is created using WXR2PDF.com', 'wxr2pdf'),
-						'madeby'      => 'x',
+						'madeby'      => 'wxr2pdf',
 						'titleprefix' => __( 'File:', 'wxr2pdf' ),
 					],
 				]
@@ -209,16 +183,8 @@ class Worker {
 				]
 			);
 
-			//print $html;
-
 			$pdf->create( $html );
-
-			// if (is_array(static::$urls) && count(static::$urls)) {
-			//  $pdf->attach(static::$urls);
-			// }
-
 			$pdf->save( $filename );
-
 
 		}
 		$progress_bar->finish();
@@ -264,10 +230,6 @@ class Worker {
 
 
 	static function _get_linked_elements( $html, $download_dir, $base_url, $all_post_slugs = [] ) {
-
-		// if ( defined( 'WP_CLI' ) && WP_CLI && WXR2PDF_DEBUG ) {
-		// 	\WP_CLI::print_value( array_filter( func_get_args(), 'is_scalar' ) ); // http://stackoverflow.com/a/13088138/1434155
-		// }
 
 		$dom = new \DOMDocument();
 		@$dom->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ) /*, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD*/ );
