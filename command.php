@@ -46,7 +46,16 @@ class Command {
 	 * : Select post type. If not set, "post" is used. Separate post types using colon, eg --posttype=post:page
 	 *
 	 * [--language=<country_CODE>]
-	 * : Loads languages/wxr2pdf_country_CODE.mo
+	 * : Loads languages/country_CODE.mo
+	 *
+	 * [--paper-format=<format>]
+	 * : Default is A4, alternative is Letter
+	 *
+	 * [--paper-orientation=<oriantation>]
+	 * : Default is P (portarit), alternative is L (landscape)
+	 *
+	 * [--watermark=<text>]
+	 * : Add watermark to the PDF
 	 *
 	 * [--noimg]
 	 * : Dont include images
@@ -59,7 +68,7 @@ class Command {
 	 *   wp wxr2pdf wxr-file.xml --posttype=page
 	 *   wp wxr2pdf wxr-file.xml --nocomments
 	 *
-	 * @synopsis <file> [--language=<country_CODE>] [--noimg] [--posttype=<posttype>]
+	 * @synopsis <file> [--language=<country_CODE>] [--noimg] [--posttype=<posttype>] [--paper-format=<format>] [--paper-orientation=<oriantation>] [--watermark=<text>]
 	 */
 	function __invoke( $args, $assoc_args ) {
 		if ( $args ) {
@@ -82,6 +91,6 @@ class Command {
 	}
 }
 
-if ( class_exists('WP_CLI')) {
+if ( class_exists( 'WP_CLI' ) ) {
 	\WP_CLI::add_command( 'wxr2pdf', __NAMESPACE__ . '\Command' );
 }

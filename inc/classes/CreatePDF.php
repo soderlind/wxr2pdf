@@ -11,60 +11,78 @@ class CreatePDF extends Options {
 
 	private static $instance;
 
-	public static function get_instance() {
+	public static function get_instance( $args = [] ) {
 
 		if ( self::$instance ) {
 			return self::$instance;
 		}
 
-		self::$instance = new self();
+		self::$instance = new self( $args );
 		return self::$instance;
 	}
 
-	private function __construct() {
+	private function __construct( $args = [] ) {
 		parent::get_instance();
+		$this->set_options( $args );
 	}
 
+	private function set_options( $args = [] ) {
+		foreach ( $args as $arg => $value ) {
+			switch ( $arg ) {
+				case 'paper-format':
+					self::$options['pdf_layout']['paper_format'] = ( 'a4' == strtolower( $value ) ) ? 'A4' : 'Letter';
+					break;
+				case 'paper-orientation':
+					self::$options['pdf_layout']['paper_orientation'] = ( 'l' == strtolower( $value ) ) ? 'L' : 'P';
+					break;
+				case 'watermark':
+					self::$options['pdf_watermark']['watermark']      = 'watermark_text';
+					self::$options['pdf_watermark']['watermark_text'] = $value;
+					break;
+			}
+		}
+
+	}
 
 	private $author_firstlast;
 	private $author_lastfirst;
+	private $title;
 	private $subject;
 	private $keywords;
-	private $generator;
+	private $creator;
 
 	private $pdf;
 
-	function init( $post, $title = '', $ingress = '' ) {
+	public function init( $post, $title = '', $decription = '' ) {
 
 		//	$this->author_firstlast = sprintf("%s %s",get_the_author_meta('user_firstname',$post['post_author'],get_the_author_meta('user_lastname',$post['post_author']);
 		//	$this->author_lastfirst = sprintf("%s, %s",get_the_author_meta('user_firstname',$post['post_author'],get_the_author_meta('user_lastname',$post['post_author']);
-		$this->author_firstlast = 'First Last';
-		$this->author_lastfirst = 'Last First';
-		$this->subject          = 'KATEGORI';//(count(wp_get_post_categories($post['ID'])) ? implode(' ,',array_map("get_cat_name", wp_get_post_categories($post['ID'])) : "";
-		$this->keywords         = 'TERMS';//$this->_get_taxonomies_terms($post);
-		$this->generator        = 'WXR2PDF ' . WXR2PDF_VERSION . ' by Per Soderlind, https://soderlind.no';
+
+		$this->author_firstlast = ( isset( $post['author_display_name'] ) ) ? $post['author_display_name'] : '';
+		$this->title            = _x( 'PDF dump of:', 'Prefix title in PDF metadata', 'wxr2pdf' ) . ' ' . $title;
+		$this->subject          = $decription;
+		// $this->keywords         = $decription; //'TERMS';//$this->_get_taxonomies_terms($post);
+		$this->creator = 'WXR2PDF ' . WXR2PDF_VERSION . ' by Per Soderlind, https://github.com/soderlind/wxr2pdf';
 
 		// content
 		//	$this->html .= apply_filters('the_content', $content);
 
 		//	$html = $this->html;
 
-		define( '_MPDF_TEMP_PATH', WXR2PDF_CACHE . '/tmp/' );
-		define( '_MPDF_TTFONTDATAPATH', WXR2PDF_CACHE . '/font/' );
+		defined( '_MPDF_TEMP_PATH' ) || define( '_MPDF_TEMP_PATH', WXR2PDF_CACHE . '/tmp/' );
+		defined( '_MPDF_TTFONTDATAPATH' ) || define( '_MPDF_TTFONTDATAPATH', WXR2PDF_CACHE . '/font/' );
 		// _MPDF_SYSTEM_TTFONTS - us when implementing font management
 
-		// require_once( WXR2PDF_PATH . '/lib/mpdf60/mpdf.php' );
-
-		$paper_format = sprintf(
-			"'%s-%s'",
-			( 'custom_paper_format' == parent::$options['pdf_layout']['paper_format'] ) ? parent::$options['pdf_layout']['custom_paper_format'] : parent::$options['pdf_layout']['paper_format'],
-			parent::$options['pdf_layout']['paper_orientation']
-		);
+		// $paper_format = sprintf(
+		// 	"'%s-%s'",
+		// 	( 'custom_paper_format' == parent::$options['pdf_layout']['paper_format'] ) ? parent::$options['pdf_layout']['custom_paper_format'] : parent::$options['pdf_layout']['paper_format'],
+		// 	parent::$options['pdf_layout']['paper_orientation']
+		// );
 
 		$this->pdf = new Mpdf(
 			[
-				'mode'              => '',
-				'format'            => 'A4',
+				'mode'              => 'utf-8',
+				'format'            => self::$options['pdf_layout']['paper_format'],
 				'default_font_size' => 0,
 				'default_font'      => 'dejavusans',
 				'margin_left'       => 15,
@@ -73,7 +91,7 @@ class CreatePDF extends Options {
 				'margin_bottom'     => 16,
 				'margin_header'     => 9,
 				'margin_footer'     => 9,
-				'orientation'       => parent::$options['pdf_layout']['paper_orientation'],
+				'orientation'       => self::$options['pdf_layout']['paper_orientation'],
 			]
 		);
 
@@ -85,55 +103,55 @@ class CreatePDF extends Options {
 		// 	)
 		// );
 
-		$this->pdf->fontdata = array(
-			'dejavusanscondensed'  => array(
+		$this->pdf->fontdata = [
+			'dejavusanscondensed'  => [
 				'R'          => 'DejaVuSansCondensed.ttf',
 				'B'          => 'DejaVuSansCondensed-Bold.ttf',
 				'I'          => 'DejaVuSansCondensed-Oblique.ttf',
 				'BI'         => 'DejaVuSansCondensed-BoldOblique.ttf',
 				'useOTL'     => 0xFF,
 				'useKashida' => 75,
-			),
-			'dejavusans'           => array(
+			],
+			'dejavusans'           => [
 				'R'          => 'DejaVuSans.ttf',
 				'B'          => 'DejaVuSans-Bold.ttf',
 				'I'          => 'DejaVuSans-Oblique.ttf',
 				'BI'         => 'DejaVuSans-BoldOblique.ttf',
 				'useOTL'     => 0xFF,
 				'useKashida' => 75,
-			),
-			'dejavuserif'          => array(
+			],
+			'dejavuserif'          => [
 				'R'  => 'DejaVuSerif.ttf',
 				'B'  => 'DejaVuSerif-Bold.ttf',
 				'I'  => 'DejaVuSerif-Italic.ttf',
 				'BI' => 'DejaVuSerif-BoldItalic.ttf',
-			),
-			'dejavuserifcondensed' => array(
+			],
+			'dejavuserifcondensed' => [
 				'R'  => 'DejaVuSerifCondensed.ttf',
 				'B'  => 'DejaVuSerifCondensed-Bold.ttf',
 				'I'  => 'DejaVuSerifCondensed-Italic.ttf',
 				'BI' => 'DejaVuSerifCondensed-BoldItalic.ttf',
-			),
-			'dejavusansmono'       => array(
+			],
+			'dejavusansmono'       => [
 				'R'          => 'DejaVuSansMono.ttf',
 				'B'          => 'DejaVuSansMono-Bold.ttf',
 				'I'          => 'DejaVuSansMono-Oblique.ttf',
 				'BI'         => 'DejaVuSansMono-BoldOblique.ttf',
 				'useOTL'     => 0xFF,
 				'useKashida' => 75,
-			),
-			'fontawesome'          => array(
+			],
+			'fontawesome'          => [
 				'R' => 'fontawesome-webfont.ttf',
-			),
-		);
+			],
+		];
 
 		//$this->pdf->sans_fonts = array('dejavusanscondensed','sans','sans-serif');
 
-		$this->pdf->SetTitle( $post['post_title'] );
+		$this->pdf->SetTitle( $this->title );
 		$this->pdf->SetAuthor( $this->author_firstlast );
 		$this->pdf->SetSubject( $this->subject );
 		$this->pdf->SetKeywords( $this->keywords );
-		$this->pdf->SetCreator( parent::$options['copyright']['message'] );
+		$this->pdf->SetCreator( $this->creator );
 
 		//                          $this->pdf->autoScriptToLang = true;
 		//                          $this->pdf->baseScript = 1;
@@ -144,11 +162,11 @@ class CreatePDF extends Options {
 		$this->pdf->ignore_invalid_utf8 = true;
 		$this->pdf->useSubstitutions    = false;
 		$this->pdf->simpleTables        = true;
-		$this->pdf->h2bookmarks         = array(
+		$this->pdf->h2bookmarks         = [
 			'H1' => 0,
 			'H2' => 1,
 			'H3' => 2,
-		);
+		];
 		$this->pdf->title2annots        = true;
 
 		/**
@@ -178,14 +196,14 @@ class CreatePDF extends Options {
 		if ( 'password_owner' == $has_protection ) {
 			$user_can       = array_keys(
 				array_intersect_key(
-					array(
+					[
 						'copy'          => 1,
 						'print'         => 1,
 						'modify'        => 1,
 						'extract'       => 1,
 						'assemble'      => 1,
 						'print-highres' => 1,
-					),
+					],
 					array_filter( parent::$options['pdf_protection']['user_can_do'] )
 				)
 			);
@@ -228,30 +246,30 @@ class CreatePDF extends Options {
 				}
 				$this->pdf->DefHeaderByName(
 					'pdfheader',
-					array(
-						'L'    => array(
+					[
+						'L'    => [
 							'content'     => ( '0' != parent::$options['pdf_header']['default_header'][0] ) ? $this->_header_footer( $post, parent::$options['pdf_header']['default_header'][0] ) : '',
 							'font-size'   => 10,
 							'font-style'  => 'B',
 							'font-family' => 'serif',
 							'color'       => '#000000',
-						),
-						'C'    => array(
+						],
+						'C'    => [
 							'content'     => ( '0' != parent::$options['pdf_header']['default_header'][1] ) ? $this->_header_footer( $post, parent::$options['pdf_header']['default_header'][1] ) : '',
 							'font-size'   => 10,
 							'font-style'  => 'B',
 							'font-family' => 'serif',
 							'color'       => '#000000',
-						),
-						'R'    => array(
+						],
+						'R'    => [
 							'content'     => ( '0' != parent::$options['pdf_header']['default_header'][2] ) ? $this->_header_footer( $post, parent::$options['pdf_header']['default_header'][2] ) : '',
 							'font-size'   => 10,
 							'font-style'  => 'B',
 							'font-family' => 'serif',
 							'color'       => '#000000',
-						),
+						],
 						'line' => 1,
-					)
+					]
 				);
 				break;
 			case 'custom_header':
@@ -272,30 +290,30 @@ class CreatePDF extends Options {
 				}
 				$this->pdf->DefFooterByName(
 					'pdffooter',
-					array(
-						'L'    => array(
+					[
+						'L'    => [
 							'content'     => ( '0' != parent::$options['pdf_footer']['default_footer'][0] ) ? $this->_header_footer( $post, parent::$options['pdf_footer']['default_footer'][0] ) : '',
 							'font-size'   => 10,
 							'font-style'  => 'B',
 							'font-family' => 'serif',
 							'color'       => '#000000',
-						),
-						'C'    => array(
+						],
+						'C'    => [
 							'content'     => ( '0' != parent::$options['pdf_footer']['default_footer'][1] ) ? $this->_header_footer( $post, parent::$options['pdf_footer']['default_footer'][1] ) : '',
 							'font-size'   => 10,
 							'font-style'  => 'B',
 							'font-family' => 'serif',
 							'color'       => '#000000',
-						),
-						'R'    => array(
+						],
+						'R'    => [
 							'content'     => ( '0' != parent::$options['pdf_footer']['default_footer'][2] ) ? $this->_header_footer( $post, parent::$options['pdf_footer']['default_footer'][2] ) : '',
 							'font-size'   => 10,
 							'font-style'  => 'B',
 							'font-family' => 'serif',
 							'color'       => '#000000',
-						),
+						],
 						'line' => 1,
-					)
+					]
 				);
 				break;
 			case 'custom_footer':
@@ -405,7 +423,7 @@ class CreatePDF extends Options {
 					</div>
 					',
 					$title,
-					$ingress
+					$decription
 				)
 			);
 			$this->pdf->showWatermarkImage = false;
@@ -414,7 +432,7 @@ class CreatePDF extends Options {
 
 		$toc = parent::$options['pdf_layout']['add_toc'];
 		$this->pdf->AddPageByArray(
-			array(
+			[
 				'suppress'     => 'off', // don't supress headers
 				'ohname'       => ( '0' != $header ) ? ( 'custom_header' == $header ) ? 'html_pdfheader' : 'pdfheader' : '',
 				'ehname'       => ( '0' != $header ) ? ( 'custom_header' == $header ) ? 'html_pdfheader' : 'pdfheader' : '',
@@ -425,7 +443,7 @@ class CreatePDF extends Options {
 				'ofvalue'      => ( '0' != $footer ) ? 1 : 0,
 				'efvalue'      => ( '0' != $footer ) ? 1 : 0,
 				'resetpagenum' => ( '0' != $toc ) ? 2 : 1,
-			)
+			]
 		);
 
 		/**
@@ -438,14 +456,14 @@ class CreatePDF extends Options {
 			if ( $toc_start > $toc_stop ) {
 				$toc_stop = $toc_start + 1;
 			}
-			$toc_arr = array();
+			$toc_arr = [];
 			$j       = 0;
 			for ( $i = $toc_start; $i <= $toc_stop; $i++ ) {
 				$toc_arr[ sprintf( 'H%s', $i ) ] = $j++;
 			}
 			$this->pdf->h2toc = $toc_arr;
 			$this->pdf->TOCpagebreakByArray(
-				array(
+				[
 					// 'tocfont' => '',
 					// 'tocfontsize' => '',
 					// 'outdent' => '2em',
@@ -496,7 +514,7 @@ class CreatePDF extends Options {
 				// 'toc_pagesel' => '',
 				// 'sheetsize' => '',
 				// 'toc_sheetsize' => '',
-				)
+				]
 			);
 		}
 		// if waters are set, show them

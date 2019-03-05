@@ -8,15 +8,33 @@
 - `file` **required**, path to WXR file for parsing.
 - `--posttype=<posttype>` select post type. If not set, `post` is used. Separate post types using colon.
 - `--language=<country_CODE>` loads languages/wxr2pdf_country_CODE.mo
+- `--paper-format=<format>` default is `A4`, alternative is `Letter`
+- `--paper-orientation=<oriantation>` default is `P` (portarit), alternative is `L` (landscape)
+- `--watermark=<text>` add watermark to the PDF, enclose in quotes if more than one word.
 - `--noimg` don't include images.
+- `--nocomments` don't include comments
+
+Add defaults options to your `wp-cli.yml` file, eksample:
+
+```yml
+wxr2pdf:
+  paper-format: Letter
+  watermark: "WXR2PDF 2019"
+```
 
 ## Examples
+
+[Export from WordPress](https://developer.wordpress.org/cli/commands/export/) using `wp export`
+
+Convert to PDF, assuming the export is `wxr-file.xml`
+
 ```txt
   wp wxr2pdf wxr-file.xml
   wp wxr2pdf wxr-file.xml --language=nb_NO
   wp wxr2pdf wxr-file.xml --noimg
   wp wxr2pdf wxr-file.xml --posttype=post:page
   wp wxr2pdf wxr-file.xml --nocomments
+  wp wxr2pdf wxr-file.xml --paper-format=Letter --watermark="WP 2019"
 ```
 
 The [example PDF](wxr2pdf-example.pdf) is created using `wp wxr2pdf --posttype=post wxr2pdf.WordPress.2019-02-26.xml`
