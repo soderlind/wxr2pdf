@@ -46,6 +46,16 @@ The [example PDF](wxr2pdf-example.pdf) is created using `wp wxr2pdf --posttype=p
 1. In `wp-content/plugins/wxr2pdf` run `composer install`
 1. Activate the plugin: `wp plugin activate wxr2pdf`
 
+## FAQ
+
+1. **What's WXR?** The WordPress XML export file uses the WordPress Extended RSS format, also known as WXR.
+
+## Roadmap
+
+- Continue refactoring code.
+- Support piping, e.g., let the user do `wp export --stdout | wp wxr2pdf`
+- Convert to wp package
+
 ## Copyright and License
 
 wxr2pdf is copyright 2019 Per Soderlind
