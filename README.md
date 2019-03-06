@@ -52,6 +52,7 @@ The [example PDF](https://github.com/soderlind/wxr2pdf/raw/master/wxr2pdf-exampl
 
 1. **What's WXR?** The WordPress XML export file uses the WordPress Extended RSS format, also known as WXR.
 1. **Why doesn't the PDF look like my site?** wxr2pdf converts only the content, not the design. It tries to remove embedded shortcodes.
+1. **Why aren't any images included in the PDF?** The site and it's images must be online and accessible. Also, if images on your site are added using shortcodes, wxr2pdf might not be able to add them.
 
 ## Roadmap
 
