@@ -37,7 +37,7 @@ Convert to PDF, assuming the export is `wxr-file.xml`
   wp wxr2pdf wxr-file.xml --paper-format=Letter --watermark="WP 2019"
 ```
 
-The [example PDF](wxr2pdf-example.pdf) is created using `wp wxr2pdf --posttype=post wxr2pdf.WordPress.2019-02-26.xml`
+The [example PDF](https://github.com/soderlind/wxr2pdf/raw/master/wxr2pdf-example.pdf) is created using `wp wxr2pdf --posttype=post wxr2pdf.WordPress.2019-02-26.xml`
 - Site content from wptest.io
 
 ## Installation and activation
