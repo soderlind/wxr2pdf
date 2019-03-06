@@ -1,4 +1,6 @@
-# WP-CLI add-on: wxr2pdf, convert an WordPress Export to PDF
+# wxr2pdf, convert an WordPress Export File to PDF
+
+wxr2pdf is an WP-CLI extenstion that converts the content of an WordPress Export File to PDF.
 
 ## Syntax
 
@@ -49,6 +51,7 @@ The [example PDF](https://github.com/soderlind/wxr2pdf/raw/master/wxr2pdf-exampl
 ## FAQ
 
 1. **What's WXR?** The WordPress XML export file uses the WordPress Extended RSS format, also known as WXR.
+1. **Why doesn't the PDF look like my site?** wxr2pdf converts only the content, not the design. It tries to remove embedded shortcodes.
 
 ## Roadmap
 
