@@ -7,7 +7,7 @@ wxr2pdf is an WP-CLI extenstion that converts the content of an WordPress Export
 `wp wxr2pdf [options]`
 
 ## Options
-- `file` **required**, path to WXR file for parsing.
+- `file` **required**, path to the WordPress Export File for parsing.
 - `--posttype=<posttype>` select post type. If not set, `post` is used. Separate post types using colon.
 - `--language=<country_CODE>` loads languages/wxr2pdf_country_CODE.mo
 - `--paper-format=<format>` default is `A4`, alternative is `Letter`
