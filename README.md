@@ -1,6 +1,6 @@
 # wxr2pdf, convert an WordPress Export File to PDF
 
-wxr2pdf is an WP-CLI extenstion that converts the content of an WordPress Export File to PDF.
+wxr2pdf is an WP-CLI extension that converts the content of an WordPress Export File to PDF.
 
 ## Syntax
 
