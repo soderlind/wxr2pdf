@@ -140,10 +140,14 @@ class Worker {
 				]
 			);
 			$html = apply_filters( 'the_content', $html );
+			$filename = sprintf('%s/%s-%s-%s.pdf',
+				getcwd(),
+				sanitize_title( $data['site_title'] ),
+				rand(),
+				$post_type
+			);
 
-			$filename = dirname( $wxr_file ) . '/' . basename( $wxr_file, '.xml' ) . '-' . $post_type . '.pdf';
-
-			$download_dir = dirname( $wxr_file ) . '/' . basename( $wxr_file, '.xml' );
+			$download_dir = getcwd() . '/' . sanitize_title( $data['site_title'] );
 
 			if ( isset( $assoc_args['noimg'] ) ) {
 				$html = self::_remove_img_tag( $html );

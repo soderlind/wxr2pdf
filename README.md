@@ -4,12 +4,17 @@ wxr2pdf is an WP-CLI extension that converts the content of an WordPress Export 
 
 ## Syntax
 
-`wp wxr2pdf [options]`
+`wp wxr2pdf [parameters]`
 
+## Parameters
 
+**Required**, either
+- `file` path to the WordPress Export File.
 
-## Options
-- `file` **required**, path to the WordPress Export File.
+or
+- `--stdin`
+
+Optional
 - `--posttype=<posttype>` select post type. If not set, `post` is used. Separate post types using colon.
 - `--language=<country_CODE>` loads languages/country_CODE.mo
 - `--paper-format=<format>` default is `A4`, alternative is `Letter`
@@ -34,6 +39,7 @@ Convert to PDF, assuming the export is `wxr-file.xml`
 
 ```txt
   wp wxr2pdf wxr-file.xml
+  wp export --stdout | wp wxr2pdf --stdin --posttype=page
   wp wxr2pdf wxr-file.xml --language=nb_NO
   wp wxr2pdf wxr-file.xml --noimg
   wp wxr2pdf wxr-file.xml --posttype=post:page
@@ -59,7 +65,7 @@ The [example PDF](https://github.com/soderlind/wxr2pdf/raw/master/wxr2pdf-exampl
 ## Roadmap
 
 - Continue refactoring code.
-- Support piping, e.g., let the user do `wp export --stdout | wp wxr2pdf`
+- ~~Support piping, e.g., let the user do `wp export --stdout | wp wxr2pdf`~~
 - Convert to wp package
 
 ## Copyright and License
