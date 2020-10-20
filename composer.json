@@ -1,5 +1,5 @@
 {
-    "name": "soderlind/wxr2psd",
+    "name": "soderlind/wxr2pdf",
     "description": "Convert an WordPress Export to PDF",
     "version": "0.0.3",
     "type": "wordpress-plugin",
