@@ -1,24 +1,25 @@
 {
-    "name": "soderlind/wxr2pdf",
-    "description": "Convert an WordPress Export to PDF",
-    "version": "1.0.0",
-    "type": "wp-cli-package",
-    "keywords": ["wp-cli", "convert", "pdf"],
-    "homepage": "https://github.com/soderlind/wxr2pdf",
-    "license": "GPL-2.0",
-    "authors": [
-        {
-            "name": "Per Søderlind",
-            "email": "per@soderlind.no",
-            "homepage": "https://soderlind.no",
-            "role": "Developer"
-        }
-    ],
-    "support": {
-        "issues": "https://github.com/soderlind/wxr2pdf/issues",
-        "source": "https://github.com/soderlind/wxr2pdf"
-    },
+	"name": "soderlind/wxr2pdf",
+	"description": "Convert an WordPress Export to PDF",
+	"version": "1.0.0",
+	"type": "wp-cli-package",
+	"keywords": ["wp-cli", "convert", "pdf"],
+	"homepage": "https://github.com/soderlind/wxr2pdf",
+ 	"license": "GPL-2.0",
+	"authors": [
+        	{
+            		"name": "Per Søderlind",
+            		"email": "per@soderlind.no",
+            		"homepage": "https://soderlind.no",
+ 			"role": "Developer"
+        	}
+	],
+	"support": {
+        	"issues": "https://github.com/soderlind/wxr2pdf/issues",
+        	"source": "https://github.com/soderlind/wxr2pdf"
+	},
 	"require": {
+		"wp-cli/wp-cli": "^2",
 		"mpdf/mpdf": "^7.1",
 		"twig/twig": "^2.0"
 	},
@@ -26,6 +27,8 @@
 		"psr-4": {
 			"Soderlind\\WXR2PDF\\": "inc/classes"
 		},
-		 "files": [ "command.php" ]
+		"files": [ 
+			 "command.php" 
+		]
 	}
 }
