@@ -1,7 +1,7 @@
 {
     "name": "soderlind/wxr2pdf",
     "description": "Convert an WordPress Export to PDF",
-    "version": "0.0.3",
+    "version": "1.0.0",
     "type": "wp-cli-package",
     "keywords": ["wp-cli", "convert", "pdf"],
     "homepage": "https://github.com/soderlind/wxr2pdf",
