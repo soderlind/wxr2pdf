@@ -89,6 +89,11 @@ class Worker {
 						$sort_array[ $key ][] = $value;
 					}
 
+					// If param --nocomments, remove comments.
+					if ( isset( $assoc_args['nocomments'], $post['comments'] ) ) {
+						unset( $post['comments'] );
+					}
+
 					//add to posts array
 					$posts[] = $post;
 					$progress_bar->tick();

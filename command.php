@@ -12,7 +12,7 @@
  * Plugin URI: https://github.com/soderlind/wxr2pdf
  * GitHub Plugin URI: https://github.com/soderlind/wxr2pdf
  * Description: WP-CLI add-on: wxr2pdf, convert an WordPress Export to PDF
- * Version:     1.0.0
+ * Version:     1.1.0
  * Author:      Per Soderlind
  * Author URI:  https://soderlind.no
  * Text Domain: wxr2pdf
@@ -63,16 +63,19 @@ class Command {
 	 * [--noimg]
 	 * : Dont include images
 	 *
+	 * [--nocomments]
+	 * : Dont include comments
+	 *
 	 * ## EXAMPLES
 	 *
 	 *   wp wxr2pdf wxr-file.xml
-	 *   wp wxr2pdf wxr-file.xml --language=nb_NO
 	 *   wp wxr2pdf wxr-file.xml --noimg
-	 *   wp wxr2pdf wxr-file.xml --posttype=page
 	 *   wp wxr2pdf wxr-file.xml --nocomments
+	 *   wp wxr2pdf wxr-file.xml --posttype=page
+	 *   wp wxr2pdf wxr-file.xml --language=nb_NO
 	 *   wp export --stdout | wp wxr2pdf --stdin
 	 *
-	 * @synopsis [<file>] [--stdin] [--language=<country_CODE>] [--noimg] [--posttype=<posttype>] [--paper-format=<format>] [--paper-orientation=<oriantation>] [--watermark=<text>]
+	 * @synopsis [<file>] [--stdin] [--noimg] [--nocomments] [--posttype=<posttype>] [--language=<country_CODE>] [--paper-format=<format>] [--paper-orientation=<oriantation>] [--watermark=<text>]
 	 */
 	function __invoke( $args, $assoc_args ) {
 		$wxr_file = '';
