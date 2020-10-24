@@ -2,7 +2,7 @@
 	"name": "soderlind/wxr2pdf",
 	"description": "Convert an WordPress Export to PDF",
 	"version": "1.0.0",
-	"type": "wp-cli-package",
+	"type": "wordpress-plugin",
 	"keywords": ["wp-cli", "convert", "pdf"],
 	"homepage": "https://github.com/soderlind/wxr2pdf",
  	"license": "GPL-2.0",
@@ -26,9 +26,6 @@
 	"autoload": {
 		"psr-4": {
 			"Soderlind\\WXR2PDF\\": "inc/classes"
-		},
-		"files": [ 
-			 "command.php" 
-		]
+		}
 	}
 }
