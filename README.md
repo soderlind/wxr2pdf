@@ -35,7 +35,7 @@ wxr2pdf:
 
 [Export from WordPress](https://developer.wordpress.org/cli/commands/export/) using `wp export`
 
-Convert to PDF, assuming the export is `wxr-file.xml`
+Convert to PDF, assuming the export is `wxr-file.xml` or reading from `STDIN`
 
 ```txt
   wp wxr2pdf wxr-file.xml
