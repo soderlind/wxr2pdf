@@ -1,17 +1,34 @@
 <?php
-
+declare( strict_types = 1 );
 namespace Soderlind\WXR2PDF;
-! defined( 'WP_CLI' ) and exit;
 
-
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use Mpdf\Mpdf;
 
+/**
+ * Create the PDF.
+ */
 class CreatePDF extends Options {
 
 	private static $instance;
+	private $author_firstlast;
+	private $author_lastfirst;
+	private $title;
+	private $subject;
+	private $keywords;
+	private $creator;
+	private $pdf;
 
-	public static function get_instance( $args = [] ) {
+	/**
+	 * Get the PDF instance.
+	 *
+	 * @param array $args
+	 * @return mixed
+	 */
+	public static function get_instance( array $args = [] ) {
 
 		if ( self::$instance ) {
 			return self::$instance;
@@ -21,42 +38,59 @@ class CreatePDF extends Options {
 		return self::$instance;
 	}
 
-	private function __construct( $args = [] ) {
+	private function __construct( array $args = [] ) {
 		parent::get_instance();
 		$this->set_options( $args );
 	}
 
-	private function set_options( $args = [] ) {
+	/**
+	 * Set the commandline options.
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	private function set_options( array $args = [] ) {
 		foreach ( $args as $arg => $value ) {
 			switch ( $arg ) {
+				case 'language':
+					self::$options['language'] = $value;
+				break;
 				case 'paper-format':
 					self::$options['pdf_layout']['paper_format'] = ( 'a4' == strtolower( $value ) ) ? 'A4' : 'Letter';
-					break;
+				break;
 				case 'paper-orientation':
 					self::$options['pdf_layout']['paper_orientation'] = ( 'l' == strtolower( $value ) ) ? 'L' : 'P';
-					break;
+				break;
+				case 'posttype':
+					self::$options['posttype'] = $value;
+				break;
 				case 'watermark':
 					self::$options['pdf_watermark']['watermark']      = 'watermark_text';
 					self::$options['pdf_watermark']['watermark_text'] = $value;
-					break;
+				break;
+				case 'noimg':
+					self::$options['noimg'] = true;
+				break;
+				case 'nocomments':
+					self::$options['noimg'] = true;
+				break;
 			}
 		}
 
 	}
 
-	private $author_firstlast;
-	private $author_lastfirst;
-	private $title;
-	private $subject;
-	private $keywords;
-	private $creator;
+	/**
+	 * Setup the PDF document.
+	 *
+	 * @param array $post
+	 * @param string $title
+	 * @param string $decription
+	 * @return void
+	 */
+	public function init( array $post, string $title = '', string $decription = '' ) {
 
-	private $pdf;
-
-	public function init( $post, $title = '', $decription = '' ) {
-
-		//	$this->author_firstlast = sprintf("%s %s",get_the_author_meta('user_firstname',$post['post_author'],get_the_author_meta('user_lastname',$post['post_author']);
-		//	$this->author_lastfirst = sprintf("%s, %s",get_the_author_meta('user_firstname',$post['post_author'],get_the_author_meta('user_lastname',$post['post_author']);
+		// $this->author_firstlast = sprintf("%s %s",get_the_author_meta('user_firstname',$post['post_author'],get_the_author_meta('user_lastname',$post['post_author']);
+		// $this->author_lastfirst = sprintf("%s, %s",get_the_author_meta('user_firstname',$post['post_author'],get_the_author_meta('user_lastname',$post['post_author']);
 
 		$this->author_firstlast = ( isset( $post['author_display_name'] ) ) ? $post['author_display_name'] : '';
 		$this->title            = _x( 'PDF dump of:', 'Prefix title in PDF metadata', 'wxr2pdf' ) . ' ' . $title;
@@ -65,18 +99,18 @@ class CreatePDF extends Options {
 		$this->creator = 'WXR2PDF ' . WXR2PDF_VERSION . ' by Per Soderlind, https://github.com/soderlind/wxr2pdf';
 
 		// content
-		//	$this->html .= apply_filters('the_content', $content);
+		// $this->html .= apply_filters('the_content', $content);
 
-		//	$html = $this->html;
+		// $html = $this->html;
 
 		defined( '_MPDF_TEMP_PATH' ) || define( '_MPDF_TEMP_PATH', WXR2PDF_CACHE . '/tmp/' );
 		defined( '_MPDF_TTFONTDATAPATH' ) || define( '_MPDF_TTFONTDATAPATH', WXR2PDF_CACHE . '/font/' );
 		// _MPDF_SYSTEM_TTFONTS - us when implementing font management
 
 		// $paper_format = sprintf(
-		// 	"'%s-%s'",
-		// 	( 'custom_paper_format' == parent::$options['pdf_layout']['paper_format'] ) ? parent::$options['pdf_layout']['custom_paper_format'] : parent::$options['pdf_layout']['paper_format'],
-		// 	parent::$options['pdf_layout']['paper_orientation']
+		// "'%s-%s'",
+		// ( 'custom_paper_format' == parent::$options['pdf_layout']['paper_format'] ) ? parent::$options['pdf_layout']['custom_paper_format'] : parent::$options['pdf_layout']['paper_format'],
+		// parent::$options['pdf_layout']['paper_orientation']
 		// );
 
 		$this->pdf = new Mpdf(
@@ -96,11 +130,11 @@ class CreatePDF extends Options {
 		);
 
 		// $this->pdf->fontdata = array(	"dejavusanscondensed" => array(
-		// 		'R' => "DejaVuSansCondensed.ttf",
-		// 		'B' => "DejaVuSansCondensed-Bold.ttf",
-		// 		'I' => "DejaVuSansCondensed-Oblique.ttf",
-		// 		'BI' => "DejaVuSansCondensed-BoldOblique.ttf",
-		// 	)
+		// 'R' => "DejaVuSansCondensed.ttf",
+		// 'B' => "DejaVuSansCondensed-Bold.ttf",
+		// 'I' => "DejaVuSansCondensed-Oblique.ttf",
+		// 'BI' => "DejaVuSansCondensed-BoldOblique.ttf",
+		// )
 		// );
 
 		$this->pdf->fontdata = [
@@ -145,7 +179,7 @@ class CreatePDF extends Options {
 			],
 		];
 
-		//$this->pdf->sans_fonts = array('dejavusanscondensed','sans','sans-serif');
+		// $this->pdf->sans_fonts = array('dejavusanscondensed','sans','sans-serif');
 
 		$this->pdf->SetTitle( $this->title );
 		$this->pdf->SetAuthor( $this->author_firstlast );
@@ -153,10 +187,10 @@ class CreatePDF extends Options {
 		$this->pdf->SetKeywords( $this->keywords );
 		$this->pdf->SetCreator( $this->creator );
 
-		//                          $this->pdf->autoScriptToLang = true;
-		//                          $this->pdf->baseScript = 1;
-		//                          $this->pdf->autoVietnamese = true;
-		//                          $this->pdf->autoArabic = true;
+		// $this->pdf->autoScriptToLang = true;
+		// $this->pdf->baseScript = 1;
+		// $this->pdf->autoVietnamese = true;
+		// $this->pdf->autoArabic = true;
 		$this->pdf->autoLangToFont = true;
 
 		$this->pdf->ignore_invalid_utf8 = true;
@@ -337,24 +371,24 @@ class CreatePDF extends Options {
 
 		// $css = parent::$options['pdf_css']['custom_css'];
 		// switch ($css) {
-		// 	case 'theme_style':
-		// 		// $post_styles = $this->_get_post_styles($post['ID'];
-		// 		// $link = "";
-		// 		// foreach ($post_styles as $post_style) {
-		// 		// 	$f = file_get_contents($post_style);
-		// 		// 	if (false !== $f) {
-		// 		// 		$link = $link . "\n" . $f;
-		// 		// 	}
+		// case 'theme_style':
+		// $post_styles = $this->_get_post_styles($post['ID'];
+		// $link = "";
+		// foreach ($post_styles as $post_style) {
+		// $f = file_get_contents($post_style);
+		// if (false !== $f) {
+		// $link = $link . "\n" . $f;
+		// }
 
-		// 		// }
-		// 		// $this->pdf->CSSselectMedia = 'all';
-		// 		// $this->pdf->WriteHTML($link,1);
+		// }
+		// $this->pdf->CSSselectMedia = 'all';
+		// $this->pdf->WriteHTML($link,1);
 
-		// 		$this->pdf->WriteHTML(file_get_contents(get_stylesheet_uri()),1);
-		// 		break;
-		// 	case 'css':
-		// 		$this->pdf->WriteHTML(parent::$options['pdf_css']['css'],1);
-		// 		break;
+		// $this->pdf->WriteHTML(file_get_contents(get_stylesheet_uri()),1);
+		// break;
+		// case 'css':
+		// $this->pdf->WriteHTML(parent::$options['pdf_css']['css'],1);
+		// break;
 
 		// }
 
@@ -364,56 +398,56 @@ class CreatePDF extends Options {
 		// $coverart = parent::$options['pdf_cover']['art'];
 
 		// if ('none' != $coverart) {
-		// 	switch ($coverart) {
+		// switch ($coverart) {
 
-		// 		case 'feature_image':
-		// 			$image_url = wp_get_attachment_url( get_post_thumbnail_id($post['ID'], 'thumbnail') );
-		// 			// $image_data = wp_get_attachment_metadata(get_post_thumbnail_id($post['ID'], 'thumbnail'));
-		// 			// $left = ($w / 2) - ($image_data['width']  / 2);
-		// 			// $top  = ($h / 2) - ($image_data['height'] / 2);
-		// 			//$this->pdf->AddPage('','','','','on');
-		// 			if ('' != $image_url) {
-		// 				$this->pdf->AddPageByArray(array(
-		// 			    	'suppress' => 'on', // supress header
-		// 			    ));
-		// 				$this->pdf->WriteHTML(
-		// 					sprintf('
-		// 						<div style="position: absolute; left:0; right: 0; top: 0; bottom: 0;">
-		// 							<img src="%s" style="width: 210mm; height: 297mm; margin: 1mm;" />
-		// 						</div>',
-		// 					$image_url
-		// 					)
-		// 				);
-		// 			}
-		// 			break;
+		// case 'feature_image':
+		// $image_url = wp_get_attachment_url( get_post_thumbnail_id($post['ID'], 'thumbnail') );
+		// $image_data = wp_get_attachment_metadata(get_post_thumbnail_id($post['ID'], 'thumbnail'));
+		// $left = ($w / 2) - ($image_data['width']  / 2);
+		// $top  = ($h / 2) - ($image_data['height'] / 2);
+		// $this->pdf->AddPage('','','','','on');
+		// if ('' != $image_url) {
+		// $this->pdf->AddPageByArray(array(
+		// 'suppress' => 'on', // supress header
+		// ));
+		// $this->pdf->WriteHTML(
+		// sprintf('
+		// <div style="position: absolute; left:0; right: 0; top: 0; bottom: 0;">
+		// <img src="%s" style="width: 210mm; height: 297mm; margin: 1mm;" />
+		// </div>',
+		// $image_url
+		// )
+		// );
+		// }
+		// break;
 
-		// 		case 'custom_image':
-		// 			$image_url = parent::$options['pdf_cover']['custom_image'];
-		// 			// $image_data = wp_get_attachment_metadata(get_post_thumbnail_id($post['ID'], 'thumbnail'));
-		// 			// $left = ($w / 2) - ($image_data['width']  / 2);
-		// 			// $top  = ($h / 2) - ($image_data['height'] / 2);
-		// 			//$this->pdf->AddPage('','','','','on');
-		// 			if ('' != $image_url) {
-		// 				$this->pdf->AddPageByArray(array(
-		// 			    	'suppress' => 'on', // supress header
-		// 			    ));
-		// 				$this->pdf->WriteHTML(sprintf('<div style="position: absolute; left:0; right: 0; top: 0; bottom: 0;">
-		// 					<img src="%s" style="width: 210mm; height: 297mm; margin: 30;" /></div>',$image_url)
-		// 				);
-		// 			}
-		// 			break;
-		// 	}
-		// 	// we don't want watermarks on the cover page
-		// 	$this->pdf->showWatermarkImage = false;
-		// 	$this->pdf->showWatermarkText  = false;
+		// case 'custom_image':
+		// $image_url = parent::$options['pdf_cover']['custom_image'];
+		// $image_data = wp_get_attachment_metadata(get_post_thumbnail_id($post['ID'], 'thumbnail'));
+		// $left = ($w / 2) - ($image_data['width']  / 2);
+		// $top  = ($h / 2) - ($image_data['height'] / 2);
+		// $this->pdf->AddPage('','','','','on');
+		// if ('' != $image_url) {
+		// $this->pdf->AddPageByArray(array(
+		// 'suppress' => 'on', // supress header
+		// ));
+		// $this->pdf->WriteHTML(sprintf('<div style="position: absolute; left:0; right: 0; top: 0; bottom: 0;">
+		// <img src="%s" style="width: 210mm; height: 297mm; margin: 30;" /></div>',$image_url)
+		// );
+		// }
+		// break;
+		// }
+		// we don't want watermarks on the cover page
+		// $this->pdf->showWatermarkImage = false;
+		// $this->pdf->showWatermarkText  = false;
 		// }
 
 		if ( '' != $title ) {
 			$this->pdf->WriteHTML(
 				// sprintf('
-				// 	<div style="height: 200px; width: 400px;margin: 150px auto; background: #eee;">
-				// 		<h1 style="font: 40px/200px Helvetica, sans-serif;text-align: center;">En tittel som er passe lang</h1>
-				// 	</div>'
+				// <div style="height: 200px; width: 400px;margin: 150px auto; background: #eee;">
+				// <h1 style="font: 40px/200px Helvetica, sans-serif;text-align: center;">En tittel som er passe lang</h1>
+				// </div>'
 				// )
 				sprintf(
 					'
@@ -523,7 +557,13 @@ class CreatePDF extends Options {
 
 	}
 
-	function create( $html ) {
+	/**
+	 * Write HTML code to the document Also used internally to parse HTML into buffer.
+	 *
+	 * @param string $html
+	 * @return void
+	 */
+	function create( string $html ) {
 
 		// $html = '<h1 class="entry-title">' . $post['post_title'] . '</h1>';
 		// $content = $post['post_content'];
@@ -533,22 +573,22 @@ class CreatePDF extends Options {
 	}
 
 	// function attach($file_list) {
-	// 	$this->pdf->SetImportUse();
-	// 	foreach ($file_list as $file) {
-	// 		$pagecount = $this->pdf->SetSourceFile($file['url']);
-	// 		for ($i=1; $i<=($pagecount); $i++) {
-	// 		    $this->pdf->AddPage();
-	// 		    $import_page = $this->pdf->ImportPage($i);
-	// 		    $this->pdf->UseTemplate($import_page);
-	// 		}
-	// 	}
+	// $this->pdf->SetImportUse();
+	// foreach ($file_list as $file) {
+	// $pagecount = $this->pdf->SetSourceFile($file['url']);
+	// for ($i=1; $i<=($pagecount); $i++) {
+	// $this->pdf->AddPage();
+	// $import_page = $this->pdf->ImportPage($i);
+	// $this->pdf->UseTemplate($import_page);
+	// }
+	// }
 	// }
 
-	function save( $filename ) {
+	function save( string $filename ) {
 		$this->pdf->Output( $filename, 'F' );
 	}
 
-	private function _header_footer( $post, $type ) {
+	private function _header_footer( array $post, string $type ) {
 		$val = '';
 		switch ( $type ) {
 			case 'document_title':
@@ -576,7 +616,7 @@ class CreatePDF extends Options {
 		return $val;
 	}
 
-	private function _parse_header_footer( $post, $html, $strip_tages = false ) {
+	private function _parse_header_footer( array $post, string $html, bool $strip_tages = false ) : string {
 		// {DATE}, {TODAY}, {TITLE}, {AUTHOR}, {DOCURL}, {SITENAME}, {SITEURL}
 		if ( false !== $strip_tages ) {
 			$html = addslashes( strip_tags( $html ) );
