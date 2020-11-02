@@ -1,30 +1,40 @@
 <?php
+declare( strict_types = 1 );
 namespace Soderlind\WXR2PDF;
-! defined( 'WP_CLI' ) and exit;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 /**
  * WXR2PDF Worker
  */
 class Worker {
 
 	static $urls = [];
-
-	static function callback( $args ) {
+	/**
+	 * Build and save PDF
+	 *
+	 * @param array $args
+	 * @return void
+	 */
+	static function callback( array $args ) {
 
 		$wxr_file      = $args['file'];
-		$assoc_args    = $args['assoc_args'];
-		$str_post_type = ( isset( $assoc_args['posttype'] ) && '' != $assoc_args['posttype'] ) ? $assoc_args['posttype'] : 'post';
-		//		$post_types = array_flip(explode(':', $str_post_type));
+		$pdf = CreatePDF::get_instance( $args['assoc_args'] );
+
+		$str_post_type = ( isset( $pdf::$options['posttype'] ) && '' != $pdf::$options['posttype'] ) ? $pdf::$options['posttype'] : 'post';
+		// $post_types = array_flip(explode(':', $str_post_type));
 		$post_types  = explode( ':', $str_post_type );
 		$total_posts = 0;
 		foreach ( $post_types as $post_type ) {
 			$total_posts += ( wp_count_posts( $post_type )->publish ) ? wp_count_posts( $post_type )->publish : 0;
 		}
 
-		if ( isset( $assoc_args['language'] ) ) {
-			$mofile = WXR2PDF_PATH . '/languages/' . $assoc_args['language'] . '.mo';
+		if ( isset( $pdf::$options['language'] ) ) {
+			$mofile = WXR2PDF_PATH . '/languages/' . $pdf::$options['language'] . '.mo';
 			load_textdomain( 'wxr2pdf', $mofile );
 		}
-		//add twig template engine
+		// add twig template engine
 		$loader = new \Twig\Loader\FilesystemLoader( WXR2PDF_PATH . '/templates/twig' );
 		$twig   = new \Twig\Environment(
 			$loader,
@@ -33,17 +43,15 @@ class Worker {
 			]
 		);
 
-		$pdf = CreatePDF::get_instance( $assoc_args );
 
 		$parser = new Parser();
-
 		$attachments = $parser->parse( $wxr_file, 'attachment' );
 
 		$progress_bar = \WP_CLI\Utils\make_progress_bar( 'Making PDF: ', $total_posts );
 
 		foreach ( $post_types as $post_type ) {
-			$data = [];
-			$data = $parser->parse( $wxr_file, $post_type );
+			$data  = [];
+			$data  = $parser->parse( $wxr_file, $post_type );
 			$posts = $sort_array = [];
 			foreach ( $data['posts'] as $key => $post ) {
 
@@ -81,7 +89,7 @@ class Worker {
 					}
 					$post['featured_image'] = $attachment_url;
 
-					//sortarray - from http://php.net/manual/en/function.ksort.php#98465
+					// sortarray - from http://php.net/manual/en/function.ksort.php#98465
 					foreach ( $post as $key => $value ) {
 						if ( ! isset( $sort_array[ $key ] ) ) {
 							$sort_array[ $key ] = [];
@@ -90,18 +98,20 @@ class Worker {
 					}
 
 					// If param --nocomments, remove comments.
-					if ( isset( $assoc_args['nocomments'], $post['comments'] ) ) {
+					// if ( isset( $pdf::$options['nocomments'], $post['comments'] ) ) {
+
+					if ( isset( $pdf::$options['nocomments'], $post['comments'] ) ) {
 						unset( $post['comments'] );
 					}
 
-					//add to posts array
+					// add to posts array
 					$posts[] = $post;
 					$progress_bar->tick();
 				}
 			}
 
 			// from from http://php.net/manual/en/function.ksort.php#98465
-			$orderby = 'post_date'; //change this to whatever key you want from the array
+			$orderby = 'post_date'; // change this to whatever key you want from the array
 			if ( ! $posts ) {
 				if ( defined( 'WP_CLI' ) && WP_CLI ) {
 					\WP_CLI::line( \WP_CLI::colorize( 'Post type "%C' . $post_type . '%n" not found in file.' ) );
@@ -121,7 +131,7 @@ class Worker {
 
 			$pdf->init( $posts[0], $data['site_title'], $data['site_decription'] );
 
-			$html = $twig->render(
+			$html     = $twig->render(
 				'page.twig',
 				[
 					'posts'    => $posts,
@@ -144,17 +154,20 @@ class Worker {
 					],
 				]
 			);
-			$html = apply_filters( 'the_content', $html );
-			$filename = sprintf('%s/%s-%s-%s.pdf',
+			$html     = apply_filters( 'the_content', $html );
+			$filename = sprintf(
+				'%s/%s-%s-%s.pdf',
 				getcwd(),
 				sanitize_title( $data['site_title'] ),
-				rand(),
-				$post_type
+				$post_type,
+				date( 'Ymdhis' )
 			);
 
 			$download_dir = getcwd() . '/' . sanitize_title( $data['site_title'] );
 
-			if ( isset( $assoc_args['noimg'] ) ) {
+			// $this->clidebug( $pdf::$options );
+
+			if (  true === $pdf::$options['noimg'] ) {
 				$html = self::_remove_img_tag( $html );
 			} else {
 				$html = self::_remove_img_link( $html );
@@ -181,7 +194,7 @@ class Worker {
 						'url'            => __( 'URL', 'wxr2pdf' ),
 						'date'           => __( 'Date', 'wxr2pdf' ),
 						'date_format'    => __( 'm/d/Y', 'wxr2pdf' ),
-						//	 'external_files' => __('External files','wxr2pdf')
+						// 'external_files' => __('External files','wxr2pdf')
 						'external_files' => __( 'Eksterne filer', 'wxr2pdf' ),
 					],
 					'doc'      => [
@@ -199,9 +212,14 @@ class Worker {
 		$progress_bar->finish();
 	}
 
-
-	static function _remove_img_tag( $html ) {
-		//remove images
+	/**
+	 * Remove img tag.
+	 *
+	 * @param string $html
+	 * @return string
+	 */
+	static function _remove_img_tag( string $html ) : string {
+		// remove images
 		$dom = new \DOMDocument();
 		@$dom->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ) /*,LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD*/ );
 		$images = $dom->getElementsByTagName( 'img' );
@@ -221,9 +239,14 @@ class Worker {
 		return $dom->saveHTML();
 	}
 
-
-	static function _remove_img_link( $html ) {
-		//remove images
+	/**
+	 * Remove image link.
+	 *
+	 * @param string $html
+	 * @return string
+	 */
+	static function _remove_img_link( string $html ) : string {
+		// remove images
 		$dom = new \DOMDocument();
 		@$dom->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ) /*,LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD*/ );
 		$images = $dom->getElementsByTagName( 'img' );
@@ -237,8 +260,16 @@ class Worker {
 	}
 
 
-
-	static function _get_linked_elements( $html, $download_dir, $base_url, $all_post_slugs = [] ) {
+	/**
+	 * Find linked documents.
+	 *
+	 * @param string $html
+	 * @param string $download_dir
+	 * @param string $base_url
+	 * @param array $all_post_slugs
+	 * @return string
+	 */
+	static function _get_linked_elements( string $html, string $download_dir, string $base_url, array $all_post_slugs = [] ) : string {
 
 		$dom = new \DOMDocument();
 		@$dom->loadHTML( mb_convert_encoding( $html, 'HTML-ENTITIES', 'UTF-8' ) /*, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD*/ );
@@ -266,13 +297,13 @@ class Worker {
 					'url' => basename( $download_dir ) . '/' . basename( $url ),
 					'txt' => $tag->textContent,
 				];
-				//	//create reference link
-				//	$e = $dom->createElement('a', ' [' . $i . ']');
-				//	$a = $dom->appendChild($e);
-				//	$a->setAttribute('href', '#wxr2pdf-urls');
-				//	$sup = $dom->createElement('span');
-				//	$sup->appendChild($a);
-				//	$tag->parentNode->insertBefore($sup, $tag->nextSibling);
+				// create reference link
+				// $e = $dom->createElement('a', ' [' . $i . ']');
+				// $a = $dom->appendChild($e);
+				// $a->setAttribute('href', '#wxr2pdf-urls');
+				// $sup = $dom->createElement('span');
+				// $sup->appendChild($a);
+				// $tag->parentNode->insertBefore($sup, $tag->nextSibling);
 
 				// append font awsome
 				$icon_pdf = $dom->createDocumentFragment(); // create fragment
@@ -292,7 +323,7 @@ class Worker {
 				// $newTxtNode = $dom->createTextNode( $t );
 				// $tag->parentNode->replaceChild( $newTxtNode, $tag );
 				$icon_external_link = $dom->createDocumentFragment(); // create fragment
-				//              $icon_external_link->appendXML('<span style="font-family: fontawesome; vertical-align: bottom;"> &#xf08e;</span>'); // insert arbitary html into the fragment
+				// $icon_external_link->appendXML('<span style="font-family: fontawesome; vertical-align: bottom;"> &#xf08e;</span>'); // insert arbitary html into the fragment
 				$icon_external_link->appendXML( htmlentities( '<span style="vertical-align: bottom;"> (' . $url . ')</span>' ) ); // insert arbitary html into the fragment
 				if ( ! empty( $icon_external_link ) ) {
 					$tag->appendChild( $icon_external_link );
@@ -302,7 +333,13 @@ class Worker {
 		return $dom->saveHTML();
 	}
 
-	static function _in_slugs( $url, $slugs ) {
+	/**
+	 * Summary of _in_slugs
+	 * @param string $url
+	 * @param array $slugs
+	 * @return mixed
+	 */
+	static function _in_slugs( string $url, array $slugs ) {
 		$slug_id = 0;
 		$query   = parse_url( $url, PHP_URL_QUERY );
 		if ( '' != $query ) {
@@ -324,12 +361,14 @@ class Worker {
 
 
 	/**
-	 * Copy remote file over HTTP one small chunk at a time. From: http://stackoverflow.com/a/4000569/1434155
+	 * Copy remote file over HTTP one small chunk at a time.
 	 *
-	 * @param unknown $infile  The full URL to the remote file
-	 * @param unknown $outfile The path where to save the file
+	 * @link http://stackoverflow.com/a/4000569/1434155
+	 * @param string $infile  The full URL to the remote file
+	 * @param string $outfile The path where to save the file
+	 * @return mixed
 	 */
-	static function copyfile_chunked( $infile, $outfile ) {
+	static function copyfile_chunked( string $infile, string $outfile ) {
 		$chunksize = 10 * ( 1024 * 1024 ); // 10 Megs
 
 		/**
@@ -410,8 +449,15 @@ class Worker {
 		return $cnt;
 	}
 
-	// from http://stackoverflow.com/a/19995603/1434155
-	static function _find_post( $array, $matching ) {
+	/**
+	 * findWhere.
+	 *
+	 * @link http://stackoverflow.com/a/19995603/1434155
+	 * @param array $array
+	 * @param array $matching
+	 * @return mixed
+	 */
+	static function _find_post( array $array, array $matching ) {
 		foreach ( (array) $array as $item ) {
 			$is_match = true;
 			foreach ( $matching as $key => $value ) {
@@ -449,7 +495,14 @@ class Worker {
 		return false;
 	}
 
-	static function _array_find_element_by_key( $key, $form ) {
+	/**
+	 * Recursly find key in array.
+	 *
+	 * @param mixed $key
+	 * @param array $form
+	 * @return mixed
+	 */
+	static function _array_find_element_by_key( $key, array $form ) {
 		if ( array_key_exists( $key, $form ) ) {
 			$ret = $form[ $key ];
 			return $ret;
@@ -465,6 +518,11 @@ class Worker {
 		return false;
 	}
 
+	/**
+	 * Write debug information.
+	 * @param mixed $val
+	 * @return void
+	 */
 	private static function clidebug( $val ) {
 		if ( defined( 'WP_CLI' ) && WP_CLI && WXR2PDF_DEBUG ) {
 			\WP_CLI::print_value( $val );

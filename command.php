@@ -1,4 +1,5 @@
 <?php
+declare( strict_types = 1 );
 /**
  * WXR2PDF
  *
@@ -21,7 +22,10 @@
  */
 
 namespace Soderlind\WXR2PDF;
-! defined( 'ABSPATH' ) and exit;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 define( 'WXR2PDF_PATH', __DIR__ );
 define( 'WXR2PDF_CACHE', WXR2PDF_PATH . '/var/pdf' );
 define( 'WXR2PDF_VERSION', '1.0.0' );
@@ -77,7 +81,7 @@ class Command {
 	 *
 	 * @synopsis [<file>] [--stdin] [--noimg] [--nocomments] [--posttype=<posttype>] [--language=<country_CODE>] [--paper-format=<format>] [--paper-orientation=<oriantation>] [--watermark=<text>]
 	 */
-	function __invoke( $args, $assoc_args ) {
+	function __invoke( array $args, array $assoc_args ) : void {
 		$wxr_file = '';
 		if ( isset( $args[0] ) ) {
 			$wxr_file = $args[0];
