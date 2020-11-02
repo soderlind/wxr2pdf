@@ -13,7 +13,7 @@ declare( strict_types = 1 );
  * Plugin URI: https://github.com/soderlind/wxr2pdf
  * GitHub Plugin URI: https://github.com/soderlind/wxr2pdf
  * Description: WP-CLI add-on: wxr2pdf, convert an WordPress Export to PDF
- * Version:     1.1.0
+ * Version:     1.1.1
  * Author:      Per Soderlind
  * Author URI:  https://soderlind.no
  * Text Domain: wxr2pdf
