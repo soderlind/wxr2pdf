@@ -81,12 +81,30 @@ class Worker {
 						$post['tag']      = implode( ' ,', $tag );
 					}
 
-					$attachment_url = '';
-					if ( isset( $post['postmeta'] ) && false != ( $featured = self::_find_post( $post['postmeta'], [ 'key' => '_thumbnail_id' ] ) ) ) {
-						$thumb_id       = $featured['value'];
-						$attachment     = self::_find_post( $attachments['posts'], [ 'post_id' => $thumb_id ] );
-						$attachment_url = ! empty( $attachment['attachment_url'] ) ? $attachment['attachment_url'] : $attachment['guid'];
+					if ( isset( $post['postmeta'] ) ) {
+						foreach ( $post['postmeta'] as $meta ) {
+							if ( isset( $meta['key'] ) ) {
+								switch ( $meta['key'] ) {
+									case '_thumbnail_id':
+										$thumb_id       = $meta['value'];
+										$attachment     = self::_find_post( $attachments['posts'], [ 'post_id' => $thumb_id ] );
+										$attachment_url = ! empty( $attachment['attachment_url'] ) ? $attachment['attachment_url'] : $attachment['guid'];
+									break;
+								}
+								// export gets meta straight from the DB so could have a serialized string
+								// if ( ! $value ) {
+								// 	$value = maybe_unserialize( $meta['value'] );
+								// }
+							}
+						}
 					}
+
+					// $attachment_url = '';
+					// if ( isset( $post['postmeta'] ) && false != ( $featured = self::_find_post( $post['postmeta'], [ 'key' => '_thumbnail_id' ] ) ) ) {
+					// 	$thumb_id       = $featured['value'];
+					// 	$attachment     = self::_find_post( $attachments['posts'], [ 'post_id' => $thumb_id ] );
+					// 	$attachment_url = ! empty( $attachment['attachment_url'] ) ? $attachment['attachment_url'] : $attachment['guid'];
+					// }
 					$post['featured_image'] = $attachment_url;
 
 					// sortarray - from http://php.net/manual/en/function.ksort.php#98465
