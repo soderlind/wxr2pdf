@@ -23,7 +23,7 @@
     },
     "require": {
         "mpdf/mpdf": "~8.1.2",
-        "twig/twig": "~3.4.3"
+        "twig/twig": "~3.11.1"
     },
     "autoload": {
         "psr-4": {
